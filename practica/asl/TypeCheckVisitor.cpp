@@ -297,7 +297,20 @@ antlrcpp::Any TypeCheckVisitor::visitParenthesis(AslParser::ParenthesisContext *
   DEBUG_EXIT();
   return 0;
 }
-
+antlrcpp::Any TypeCheckVisitor::visitUnary(AslParser::UnaryContext *ctx){
+  DEBUG_ENTER();
+  visit(ctx->expr());
+  TypesMgr::TypeId t = getTypeDecor(ctx->expr());
+  //si la expresion no es numerica, no se puede aplicar
+  if(not Types.isNumericTy(t)){
+    Errors.incompatibleOperator(ctx->op );
+    t = Types.createErrorTy();
+  } 
+  putTypeDecor(ctx, t);
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
 // Getters for the necessary tree node atributes:
 //   Scope, Type ans IsLValue
 SymTable::ScopeId TypeCheckVisitor::getScopeDecor(antlr4::ParserRuleContext *ctx) {
