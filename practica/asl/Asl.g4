@@ -78,11 +78,11 @@ left_expr
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
-expr    : op=MINUS expr                          # unary
+expr    : (op=MINUS | op=PLUS | op=NOT) expr  # unary
         | PAREOP expr PARECL                  # parenthesis
         | expr (op=MUL | op=DIV) expr         # arithmetic
         | expr (op=PLUS| op=MINUS) expr       # arithmetic
-        | expr op=EQUAL expr                  # relational
+        | expr (op=EQUAL) expr # relational
         | (INTVAL| BOOLVAL | FLOATVAL | CHARVAL)  # value
         | ident                               # exprIdent
         ;
@@ -96,8 +96,16 @@ ident   : ID
 //////////////////////////////////////////////////
 PAREOP    : '(';
 PARECL    : ')';
+LT        : '<';
+LE        : '<=';
+GT        : '>';
+GE        : '>=';
 ASSIGN    : '=' ;
 EQUAL     : '==' ;
+NOTEQUAL  : '!=';
+NOT       : 'not';
+AND       : 'and';
+OR        : 'or';
 PLUS      : '+' ;
 MINUS     : '-';
 MUL       : '*';
