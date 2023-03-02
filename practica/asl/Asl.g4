@@ -78,9 +78,13 @@ left_expr
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
-expr    : expr (op=MUL | op=DIV) expr         # arithmetic
+expr    : (op=MINUS | op=PLUS | op=NOT) expr  # unary
+        | PAREOP expr PARECL                  # parenthesis
+        | expr (op=MUL | op=DIV) expr         # arithmetic
         | expr (op=PLUS| op=MINUS) expr       # arithmetic
-        | expr op=EQUAL expr                  # relational
+        | expr (op=EQUAL |op= NOTEQUAL|  op=GT | op= GE | op=LT | op=LE) expr # relational
+        | expr (op=AND) expr # and
+        | expr (op= OR) expr # or
         | (INTVAL| BOOLVAL | FLOATVAL | CHARVAL)  # value
         | ident                               # exprIdent
         ;
@@ -92,9 +96,18 @@ ident   : ID
 //////////////////////////////////////////////////
 /// Lexer Rules
 //////////////////////////////////////////////////
-
+PAREOP    : '(';
+PARECL    : ')';
+LT        : '<';
+LE        : '<=';
+GT        : '>';
+GE        : '>=';
 ASSIGN    : '=' ;
 EQUAL     : '==' ;
+NOTEQUAL  : '!=';
+NOT       : 'not';
+AND       : 'and';
+OR        : 'or';
 PLUS      : '+' ;
 MINUS     : '-';
 MUL       : '*';

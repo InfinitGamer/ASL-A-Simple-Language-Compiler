@@ -79,7 +79,10 @@ public:
   antlrcpp::Any visitRelational(AslParser::RelationalContext *ctx);
   antlrcpp::Any visitValue(AslParser::ValueContext *ctx);
   antlrcpp::Any visitIdent(AslParser::IdentContext *ctx);
-
+  antlrcpp::Any visitParenthesis(AslParser::ParenthesisContext *ctx);
+  antlrcpp::Any visitUnary(AslParser::UnaryContext *ctx);
+  antlrcpp::Any visitAnd(AslParser::AndContext *ctx);
+  antlrcpp::Any visitOr(AslParser::OrContext *ctx);
 private:
 
   // Attributes

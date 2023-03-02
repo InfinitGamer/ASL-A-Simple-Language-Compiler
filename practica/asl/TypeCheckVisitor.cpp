@@ -128,7 +128,7 @@ antlrcpp::Any TypeCheckVisitor::visitAssignStmt(AslParser::AssignStmtContext *ct
   TypesMgr::TypeId t1 = getTypeDecor(ctx->left_expr());
   TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
   if ((not Types.isErrorTy(t1)) and (not Types.isErrorTy(t2)) and
-      (not Types.copyableTypes(t1, t2)))
+      ((not Types.copyableTypes(t1, t2))))
     Errors.incompatibleAssignment(ctx->ASSIGN());
   if ((not Types.isErrorTy(t1)) and (not getIsLValueDecor(ctx->left_expr())))
     Errors.nonReferenceableLeftExpr(ctx->left_expr());
@@ -210,7 +210,17 @@ antlrcpp::Any TypeCheckVisitor::visitArithmetic(AslParser::ArithmeticContext *ct
   if (((not Types.isErrorTy(t1)) and (not Types.isNumericTy(t1))) or
       ((not Types.isErrorTy(t2)) and (not Types.isNumericTy(t2))))
     Errors.incompatibleOperator(ctx->op);
-  TypesMgr::TypeId t = Types.createIntegerTy();
+  TypesMgr::TypeId t;
+  //caso en que los dos nodos son integer -> integer
+  if((not Types.isErrorTy(t1)) and (not Types.isErrorTy(t2)) and 
+     (Types.isIntegerTy(t1) and Types.isIntegerTy(t2))) t = Types.createIntegerTy();
+  
+  //caso donde uno de los dos nodos es un float -> float (precondicion que tanto t1 como t2 han de ser numericos)
+  else if((not Types.isErrorTy(t1)) and (not Types.isErrorTy(t2)) and 
+           Types.isNumericTy(t1) and Types.isNumericTy(t2)) t = Types.createFloatTy();
+
+  //por default de error decimos que es como si fuera un nodo integer  
+  else t = Types.createIntegerTy();
   putTypeDecor(ctx, t);
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
@@ -236,7 +246,15 @@ antlrcpp::Any TypeCheckVisitor::visitRelational(AslParser::RelationalContext *ct
 
 antlrcpp::Any TypeCheckVisitor::visitValue(AslParser::ValueContext *ctx) {
   DEBUG_ENTER();
-  TypesMgr::TypeId t = Types.createIntegerTy();
+  //comprobacion de tipos y posteriormente declaracion de tipo
+
+  //por default decimos que el nodo es un error
+  TypesMgr::TypeId t = Types.createErrorTy();
+  if(ctx -> INTVAL()) t = Types.createIntegerTy();
+  else if(ctx -> FLOATVAL()) t = Types.createFloatTy();
+  else if(ctx -> BOOLVAL()) t = Types.createBooleanTy();
+  else if (ctx -> CHARVAL())t = Types.createCharacterTy();
+
   putTypeDecor(ctx, t);
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
@@ -274,8 +292,78 @@ antlrcpp::Any TypeCheckVisitor::visitIdent(AslParser::IdentContext *ctx) {
   DEBUG_EXIT();
   return 0;
 }
+antlrcpp::Any TypeCheckVisitor::visitParenthesis(AslParser::ParenthesisContext *ctx){
+  DEBUG_ENTER();
+  visit(ctx->expr());
 
+  //ponemos como tipo, el tipo que tiene la expresion dentro de los parentesis
+  TypesMgr::TypeId t = getTypeDecor(ctx->expr());
+  putTypeDecor(ctx, t);
+  //si es una left expresion pues también lo marcamos como nodo left expresion
+  bool is_value = getIsLValueDecor(ctx -> expr());
+  putIsLValueDecor(ctx, is_value);
+  DEBUG_EXIT();
+  return 0;
+}
+antlrcpp::Any TypeCheckVisitor::visitUnary(AslParser::UnaryContext *ctx){
+  DEBUG_ENTER();
+  visit(ctx->expr());
+  TypesMgr::TypeId t = getTypeDecor(ctx->expr());
+  if(ctx->NOT()){
+    //si es un error nuevo donde se hace not (tipo no booleano) diremos error y marcaremos este nodo como el que debería
+    if(not Types.isErrorTy(t) and not Types.isBooleanTy(t)){
+      Errors.incompatibleOperator(ctx->op );
+      t = Types.createBooleanTy();
+    }
+  }
+  else{
+    //si es un error nuevo donde se hace (-/+) (tipo no numerico) diremos error y marcaremos este nodo como el que debería
+    if(not Types.isErrorTy(t) and not Types.isNumericTy(t)){
+      Errors.incompatibleOperator(ctx->op );
+      if (Types.isFloatTy(t)) t = Types.createFloatTy();
+      else t = Types.createIntegerTy();
+    }
+  }
 
+  putTypeDecor(ctx, t);
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
+antlrcpp::Any TypeCheckVisitor::visitAnd(AslParser::AndContext *ctx){
+  DEBUG_ENTER();
+  visit(ctx->expr(0));
+  TypesMgr::TypeId t0 = getTypeDecor(ctx->expr(0));
+  visit(ctx->expr(1));
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(1));
+
+  //si no es una expresion booleana entonces diremos que es error y lo marcaremos como toca
+  if((not Types.isErrorTy(t0)) and (not Types.isErrorTy(t1)) and 
+     ((not Types.isBooleanTy(t0)) or (not Types.isBooleanTy(t1)))){
+      Errors.incompatibleOperator(ctx->op);
+     }
+  putTypeDecor(ctx, Types.createBooleanTy());
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+  }
+antlrcpp::Any TypeCheckVisitor::visitOr(AslParser::OrContext *ctx){
+  DEBUG_ENTER();
+  visit(ctx->expr(0));
+  TypesMgr::TypeId t0 = getTypeDecor(ctx->expr(0));
+  visit(ctx->expr(1));
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(1));
+
+  //si no es una expresion booleana entonces diremos que es error y lo marcaremos como toca
+  if((not Types.isErrorTy(t0)) and (not Types.isErrorTy(t1)) and 
+     ((not Types.isBooleanTy(t0)) or (not Types.isBooleanTy(t1)))){
+      Errors.incompatibleOperator(ctx->op);
+     }
+  putTypeDecor(ctx, Types.createBooleanTy());
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
 // Getters for the necessary tree node atributes:
 //   Scope, Type ans IsLValue
 SymTable::ScopeId TypeCheckVisitor::getScopeDecor(antlr4::ParserRuleContext *ctx) {
