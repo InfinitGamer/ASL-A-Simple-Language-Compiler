@@ -1,4 +1,4 @@
-// Generated from /home2/users/alumnes/1264222/dades/CL/ASL-A-Simple-Language-Compiler/practica/asl/Asl.g4 by ANTLR 4.9.2
+// Generated from /home/jeremy/Escritorio/ASL-A-Simple-Language-Compiler/practica/asl/Asl.g4 by ANTLR 4.9.2
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -16,10 +16,10 @@ public class AslLexer extends Lexer {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, ASSIGN=5, EQUAL=6, PLUS=7, MINUS=8, MUL=9, 
-		DIV=10, VAR=11, INT=12, BOOL=13, CHAR=14, FLOAT=15, IF=16, THEN=17, ELSE=18, 
-		ENDIF=19, FUNC=20, ENDFUNC=21, READ=22, WRITE=23, BOOLVAL=24, INTVAL=25, 
-		CHARVAL=26, FLOATVAL=27, ID=28, STRING=29, COMMENT=30, WS=31;
+		T__0=1, T__1=2, PAREOP=3, PARECL=4, ASSIGN=5, EQUAL=6, PLUS=7, MINUS=8, 
+		MUL=9, DIV=10, VAR=11, INT=12, BOOL=13, CHAR=14, FLOAT=15, IF=16, THEN=17, 
+		ELSE=18, ENDIF=19, FUNC=20, ENDFUNC=21, READ=22, WRITE=23, BOOLVAL=24, 
+		INTVAL=25, CHARVAL=26, FLOATVAL=27, ID=28, STRING=29, COMMENT=30, WS=31;
 	public static String[] channelNames = {
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN"
 	};
@@ -30,17 +30,17 @@ public class AslLexer extends Lexer {
 
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"T__0", "T__1", "T__2", "T__3", "ASSIGN", "EQUAL", "PLUS", "MINUS", "MUL", 
-			"DIV", "VAR", "INT", "BOOL", "CHAR", "FLOAT", "IF", "THEN", "ELSE", "ENDIF", 
-			"FUNC", "ENDFUNC", "READ", "WRITE", "BOOLVAL", "INTVAL", "CHARVAL", "FLOATVAL", 
-			"ID", "STRING", "ESC_SEQ", "COMMENT", "WS"
+			"T__0", "T__1", "PAREOP", "PARECL", "ASSIGN", "EQUAL", "PLUS", "MINUS", 
+			"MUL", "DIV", "VAR", "INT", "BOOL", "CHAR", "FLOAT", "IF", "THEN", "ELSE", 
+			"ENDIF", "FUNC", "ENDFUNC", "READ", "WRITE", "BOOLVAL", "INTVAL", "CHARVAL", 
+			"FLOATVAL", "ID", "STRING", "ESC_SEQ", "COMMENT", "WS"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'('", "')'", "':'", "';'", "'='", "'=='", "'+'", "'-'", "'*'", 
+			null, "':'", "';'", "'('", "')'", "'='", "'=='", "'+'", "'-'", "'*'", 
 			"'/'", "'var'", "'int'", "'bool'", "'char'", "'float'", "'if'", "'then'", 
 			"'else'", "'endif'", "'func'", "'endfunc'", "'read'", "'write'"
 		};
@@ -48,10 +48,10 @@ public class AslLexer extends Lexer {
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, null, null, null, "ASSIGN", "EQUAL", "PLUS", "MINUS", "MUL", 
-			"DIV", "VAR", "INT", "BOOL", "CHAR", "FLOAT", "IF", "THEN", "ELSE", "ENDIF", 
-			"FUNC", "ENDFUNC", "READ", "WRITE", "BOOLVAL", "INTVAL", "CHARVAL", "FLOATVAL", 
-			"ID", "STRING", "COMMENT", "WS"
+			null, null, null, "PAREOP", "PARECL", "ASSIGN", "EQUAL", "PLUS", "MINUS", 
+			"MUL", "DIV", "VAR", "INT", "BOOL", "CHAR", "FLOAT", "IF", "THEN", "ELSE", 
+			"ENDIF", "FUNC", "ENDFUNC", "READ", "WRITE", "BOOLVAL", "INTVAL", "CHARVAL", 
+			"FLOATVAL", "ID", "STRING", "COMMENT", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -145,8 +145,8 @@ public class AslLexer extends Lexer {
 		"\2\2\35e\3\2\2\2\37j\3\2\2\2!p\3\2\2\2#s\3\2\2\2%x\3\2\2\2\'}\3\2\2\2"+
 		")\u0083\3\2\2\2+\u0088\3\2\2\2-\u0090\3\2\2\2/\u0095\3\2\2\2\61\u00a4"+
 		"\3\2\2\2\63\u00a7\3\2\2\2\65\u00ab\3\2\2\2\67\u00b8\3\2\2\29\u00c2\3\2"+
-		"\2\2;\u00c9\3\2\2\2=\u00d3\3\2\2\2?\u00d6\3\2\2\2A\u00e7\3\2\2\2CD\7*"+
-		"\2\2D\4\3\2\2\2EF\7+\2\2F\6\3\2\2\2GH\7<\2\2H\b\3\2\2\2IJ\7=\2\2J\n\3"+
+		"\2\2;\u00c9\3\2\2\2=\u00d3\3\2\2\2?\u00d6\3\2\2\2A\u00e7\3\2\2\2CD\7<"+
+		"\2\2D\4\3\2\2\2EF\7=\2\2F\6\3\2\2\2GH\7*\2\2H\b\3\2\2\2IJ\7+\2\2J\n\3"+
 		"\2\2\2KL\7?\2\2L\f\3\2\2\2MN\7?\2\2NO\7?\2\2O\16\3\2\2\2PQ\7-\2\2Q\20"+
 		"\3\2\2\2RS\7/\2\2S\22\3\2\2\2TU\7,\2\2U\24\3\2\2\2VW\7\61\2\2W\26\3\2"+
 		"\2\2XY\7x\2\2YZ\7c\2\2Z[\7t\2\2[\30\3\2\2\2\\]\7k\2\2]^\7p\2\2^_\7v\2"+

@@ -78,7 +78,8 @@ left_expr
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
-expr    : expr (op=MUL | op=DIV) expr         # arithmetic
+expr    : PAREOP expr PARECL                  # parenthesis
+        | expr (op=MUL | op=DIV) expr         # arithmetic
         | expr (op=PLUS| op=MINUS) expr       # arithmetic
         | expr op=EQUAL expr                  # relational
         | (INTVAL| BOOLVAL | FLOATVAL | CHARVAL)  # value
@@ -92,7 +93,8 @@ ident   : ID
 //////////////////////////////////////////////////
 /// Lexer Rules
 //////////////////////////////////////////////////
-
+PAREOP    : '(';
+PARECL    : ')';
 ASSIGN    : '=' ;
 EQUAL     : '==' ;
 PLUS      : '+' ;

@@ -210,7 +210,15 @@ antlrcpp::Any TypeCheckVisitor::visitArithmetic(AslParser::ArithmeticContext *ct
   if (((not Types.isErrorTy(t1)) and (not Types.isNumericTy(t1))) or
       ((not Types.isErrorTy(t2)) and (not Types.isNumericTy(t2))))
     Errors.incompatibleOperator(ctx->op);
-  TypesMgr::TypeId t = Types.createIntegerTy();
+  TypesMgr::TypeId t;
+  //caso en que los dos nodos son integer -> integer
+  if((Types.isIntegerTy(t1) and Types.isIntegerTy(t2))) t = Types.createIntegerTy();
+  
+  //caso donde uno de los dos nodos es un float -> float (precondicion que tanto t1 como t2 han de ser numericos)
+  else if(Types.isNumericTy(t1) and Types.isNumericTy(t2)) t = Types.createFloatTy();
+  
+  // en caso de que no sean numericos -> error.
+  else t = Types.createErrorTy();
   putTypeDecor(ctx, t);
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
@@ -236,7 +244,13 @@ antlrcpp::Any TypeCheckVisitor::visitRelational(AslParser::RelationalContext *ct
 
 antlrcpp::Any TypeCheckVisitor::visitValue(AslParser::ValueContext *ctx) {
   DEBUG_ENTER();
-  TypesMgr::TypeId t = Types.createIntegerTy();
+  //comprobacion de tipos y posteriormente declaracion de tipo
+  TypesMgr::TypeId t;
+  if(ctx -> INTVAL()) t = Types.createIntegerTy();
+  else if(ctx -> FLOATVAL()) t = Types.createFloatTy();
+  else if(ctx -> BOOLVAL()) t = Types.createBooleanTy();
+  else t = Types.createCharacterTy();
+
   putTypeDecor(ctx, t);
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
@@ -274,7 +288,15 @@ antlrcpp::Any TypeCheckVisitor::visitIdent(AslParser::IdentContext *ctx) {
   DEBUG_EXIT();
   return 0;
 }
-
+antlrcpp::Any TypeCheckVisitor::visitParenthesis(AslParser::ParenthesisContext *ctx){
+  DEBUG_ENTER();
+  visit(ctx->expr());
+  TypesMgr::TypeId t = getTypeDecor(ctx->expr());
+  putTypeDecor(ctx, t);
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
 
 // Getters for the necessary tree node atributes:
 //   Scope, Type ans IsLValue
