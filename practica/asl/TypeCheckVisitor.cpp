@@ -212,13 +212,13 @@ antlrcpp::Any TypeCheckVisitor::visitArithmetic(AslParser::ArithmeticContext *ct
     Errors.incompatibleOperator(ctx->op);
   TypesMgr::TypeId t;
   //caso en que los dos nodos son integer -> integer
-  if((Types.isIntegerTy(t1) and Types.isIntegerTy(t2))) t = Types.createIntegerTy();
+  if((not Types.isErrorTy(t1)) and (not Types.isErrorTy(t2)) and 
+     (Types.isIntegerTy(t1) and Types.isIntegerTy(t2))) t = Types.createIntegerTy();
   
   //caso donde uno de los dos nodos es un float -> float (precondicion que tanto t1 como t2 han de ser numericos)
-  else if(Types.isNumericTy(t1) and Types.isNumericTy(t2)) t = Types.createFloatTy();
+  else if((not Types.isErrorTy(t1)) and (not Types.isErrorTy(t2)) and 
+           Types.isNumericTy(t1) and Types.isNumericTy(t2)) t = Types.createFloatTy();
   
-  // en caso de que no sean numericos -> error.
-  else t = Types.createErrorTy();
   putTypeDecor(ctx, t);
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
