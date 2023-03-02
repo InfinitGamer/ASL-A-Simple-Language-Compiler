@@ -82,7 +82,9 @@ expr    : (op=MINUS | op=PLUS | op=NOT) expr  # unary
         | PAREOP expr PARECL                  # parenthesis
         | expr (op=MUL | op=DIV) expr         # arithmetic
         | expr (op=PLUS| op=MINUS) expr       # arithmetic
-        | expr (op=EQUAL) expr # relational
+        | expr (op=EQUAL |op= NOTEQUAL|  op=GT | op= GE | op=LT | op=LE) expr # relational
+        | expr (op=AND) expr # and
+        | expr (op= OR) expr # or
         | (INTVAL| BOOLVAL | FLOATVAL | CHARVAL)  # value
         | ident                               # exprIdent
         ;
