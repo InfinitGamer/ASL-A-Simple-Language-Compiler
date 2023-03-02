@@ -293,7 +293,8 @@ antlrcpp::Any TypeCheckVisitor::visitParenthesis(AslParser::ParenthesisContext *
   visit(ctx->expr());
   TypesMgr::TypeId t = getTypeDecor(ctx->expr());
   putTypeDecor(ctx, t);
-  putIsLValueDecor(ctx, false);
+  bool is_value = getIsLValueDecor(ctx -> expr);
+  putIsLValueDecor(ctx, is_value);
   DEBUG_EXIT();
   return 0;
 }
