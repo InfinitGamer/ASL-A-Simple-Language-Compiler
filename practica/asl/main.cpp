@@ -41,7 +41,7 @@
 #include "SymbolsVisitor.h"
 #include "TypeCheckVisitor.h"
 #include "../common/code.h"
-#include "CodeGenVisitor.h"
+//#include "CodeGenVisitor.h"
 
 #include <iostream>
 #include <fstream>    // ifstream
@@ -116,7 +116,7 @@ int main(int argc, const char* argv[]) {
     std::cout << "There are semantic errors: no code generated." << std::endl;
     return EXIT_FAILURE;
   }
-
+/*
   // create a third visitor that will return the generated code
   // for each part of the tree, and will store it in 'mycode'
   CodeGenVisitor codegenerator(types, symbols, decorations);
@@ -140,6 +140,6 @@ int main(int argc, const char* argv[]) {
   // }
   // std::ofstream myLLVMFile(llvmFileName, std::ofstream::out);
   // myLLVMFile << llvmStr << std::endl;
-
+*/
   return EXIT_SUCCESS;
 }
