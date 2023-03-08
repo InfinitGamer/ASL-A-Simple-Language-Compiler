@@ -1,4 +1,4 @@
-// Generated from /home/bertus/Documents/CL/ASL-A-Simple-Language-Compiler/practica/asl/Asl.g4 by ANTLR 4.9.2
+// Generated from /home/jeremy/Escritorio/ASL-A-Simple-Language-Compiler/practica/asl/Asl.g4 by ANTLR 4.9.2
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -44,7 +44,7 @@ public class AslLexer extends Lexer {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "','", "':'", "';'", "'('", "')'", "'<'", "'<='", "'>'", "'>='", 
+			null, "':'", "','", "';'", "'('", "')'", "'<'", "'<='", "'>'", "'>='", 
 			"'='", "'=='", "'!='", "'not'", "'and'", "'or'", "'+'", "'-'", "'*'", 
 			"'/'", "'var'", "'int'", "'bool'", "'char'", "'float'", "'if'", "'then'", 
 			"'else'", "'endif'", "'while'", "'do'", "'endwhile'", "'func'", "'return'", 
@@ -161,7 +161,7 @@ public class AslLexer extends Lexer {
 		"\3\2\2\2=\u00bd\3\2\2\2?\u00c0\3\2\2\2A\u00c9\3\2\2\2C\u00ce\3\2\2\2E"+
 		"\u00d5\3\2\2\2G\u00dd\3\2\2\2I\u00e2\3\2\2\2K\u00f1\3\2\2\2M\u00f4\3\2"+
 		"\2\2O\u00f8\3\2\2\2Q\u0105\3\2\2\2S\u010f\3\2\2\2U\u0116\3\2\2\2W\u0120"+
-		"\3\2\2\2Y\u0123\3\2\2\2[\u0134\3\2\2\2]^\7.\2\2^\4\3\2\2\2_`\7<\2\2`\6"+
+		"\3\2\2\2Y\u0123\3\2\2\2[\u0134\3\2\2\2]^\7<\2\2^\4\3\2\2\2_`\7.\2\2`\6"+
 		"\3\2\2\2ab\7=\2\2b\b\3\2\2\2cd\7*\2\2d\n\3\2\2\2ef\7+\2\2f\f\3\2\2\2g"+
 		"h\7>\2\2h\16\3\2\2\2ij\7>\2\2jk\7?\2\2k\20\3\2\2\2lm\7@\2\2m\22\3\2\2"+
 		"\2no\7@\2\2op\7?\2\2p\24\3\2\2\2qr\7?\2\2r\26\3\2\2\2st\7?\2\2tu\7?\2"+
