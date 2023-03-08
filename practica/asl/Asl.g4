@@ -38,7 +38,7 @@ program : function+ EOF
 
 // A function has a name, a list of parameters and a list of statements
 function
-        : FUNC ID '(' ')' declarations statements ENDFUNC
+        : FUNC ID '(' (variable_decl (',' variable_decl)*)? ')' (':' type)? declarations statements ENDFUNC
         ;
 
 declarations
@@ -46,7 +46,7 @@ declarations
         ;
 
 variable_decl
-        : VAR ID ':' type
+        : VAR ID (',' ID)* ':' type
         ;
 
 type    : (INT | BOOL | FLOAT |CHAR)
@@ -61,8 +61,9 @@ statement
           // Assignment
         : left_expr ASSIGN expr ';'           # assignStmt
           // if-then-else statement (else is optional)
-        | IF expr THEN statements ENDIF       # ifStmt
+        | IF expr THEN statements (ELSE statements)? ENDIF   # ifStmt
           // A function/procedure call has a list of arguments in parenthesis (possibly empty)
+        | WHILE expr DO statements ENDWHILE   # whileStmt
         | ident '(' ')' ';'                   # procCall
           // Read a variable
         | READ left_expr ';'                  # readStmt
@@ -70,6 +71,7 @@ statement
         | WRITE expr ';'                      # writeExpr
           // Write a string
         | WRITE STRING ';'                    # writeString
+        | RETURN (expr)? ';'                  # return         
         ;
 
 // Grammar for left expressions (l-values in C++)
@@ -121,7 +123,11 @@ IF        : 'if' ;
 THEN      : 'then' ;
 ELSE      : 'else' ;
 ENDIF     : 'endif' ;
+WHILE     : 'while' ;
+DO        : 'do' ;
+ENDWHILE  : 'endwhile' ;
 FUNC      : 'func' ;
+RETURN    : 'return' ;
 ENDFUNC   : 'endfunc' ;
 READ      : 'read' ;
 WRITE     : 'write' ;

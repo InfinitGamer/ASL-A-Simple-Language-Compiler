@@ -93,6 +93,19 @@ antlrcpp::Any TypeCheckVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   return 0;
 }
 
+antlrcpp::Any TypeCheckVisitor::visitReturn(AslParser::ReturnContext *ctx){
+  DEBUG_ENTER();
+  TypesMgr::TypeId tRet = Types.createVoidTy();
+  if(ctx->expr()){
+    visit(ctx->expr());
+    tRet = getTypeDecor(ctx->expr());
+  }
+  putTypeDecor(ctx, tRet);
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
+
 // antlrcpp::Any TypeCheckVisitor::visitDeclarations(AslParser::DeclarationsContext *ctx) {
 //   DEBUG_ENTER();
 //   antlrcpp::Any r = visitChildren(ctx);
@@ -142,10 +155,23 @@ antlrcpp::Any TypeCheckVisitor::visitIfStmt(AslParser::IfStmtContext *ctx) {
   TypesMgr::TypeId t1 = getTypeDecor(ctx->expr());
   if ((not Types.isErrorTy(t1)) and (not Types.isBooleanTy(t1)))
     Errors.booleanRequired(ctx);
+  visit(ctx->statements(0));
+  if(ctx->statements().size() > 1) visit(ctx->statements(1));
+  DEBUG_EXIT();
+  return 0;
+}
+
+antlrcpp::Any TypeCheckVisitor::visitWhileStmt(AslParser::WhileStmtContext *ctx){
+  DEBUG_ENTER();
+  visit(ctx->expr());
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->expr());
+  if ((not Types.isErrorTy(t1)) and (not Types.isBooleanTy(t1)))
+    Errors.booleanRequired(ctx);
   visit(ctx->statements());
   DEBUG_EXIT();
   return 0;
 }
+
 
 antlrcpp::Any TypeCheckVisitor::visitProcCall(AslParser::ProcCallContext *ctx) {
   DEBUG_ENTER();

@@ -83,6 +83,8 @@ public:
   antlrcpp::Any visitUnary(AslParser::UnaryContext *ctx);
   antlrcpp::Any visitAnd(AslParser::AndContext *ctx);
   antlrcpp::Any visitOr(AslParser::OrContext *ctx);
+  antlrcpp::Any visitWhileStmt(AslParser::WhileStmtContext *ctx);
+  antlrcpp::Any visitReturn(AslParser::ReturnContext *ctx);
 private:
 
   // Attributes
