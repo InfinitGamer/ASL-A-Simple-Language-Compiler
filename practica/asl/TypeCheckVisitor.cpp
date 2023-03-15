@@ -167,7 +167,24 @@ antlrcpp::Any TypeCheckVisitor::visitAssignStmt(AslParser::AssignStmtContext *ct
   DEBUG_EXIT();
   return 0;
 }
-
+antlrcpp::Any TypeCheckVisitor::visitArrayIndex(AslParser::ArrayIndexContext *ctx){
+  DEBUG_ENTER();
+  visit(ctx->ident());
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
+  putTypeDecor(ctx, t1);
+  bool b = getIsLValueDecor(ctx->ident());
+  putIsLValueDecor(ctx, b);
+  //porque de momento todos son variables, estos no deben de tener indice
+  Errors.nonArrayInArrayAccess(ctx);
+  visit(ctx->expr());
+  TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
+  if(not Types.isIntegerTy(t2)){
+    Errors.nonIntegerIndexInArrayAccess(ctx);
+  }
+  
+  DEBUG_EXIT();
+  return 0;
+}
 antlrcpp::Any TypeCheckVisitor::visitIfStmt(AslParser::IfStmtContext *ctx) {
   DEBUG_ENTER();
   visit(ctx->expr());
@@ -316,10 +333,10 @@ antlrcpp::Any TypeCheckVisitor::visitValue(AslParser::ValueContext *ctx) {
 
 antlrcpp::Any TypeCheckVisitor::visitExprIdent(AslParser::ExprIdentContext *ctx) {
   DEBUG_ENTER();
-  visit(ctx->left_expr());
-  TypesMgr::TypeId t1 = getTypeDecor(ctx->left_expr());
+  visit(ctx->ident());
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
   putTypeDecor(ctx, t1);
-  bool b = getIsLValueDecor(ctx->left_expr());
+  bool b = getIsLValueDecor(ctx->ident());
   putIsLValueDecor(ctx, b);
   DEBUG_EXIT();
   return 0;

@@ -16,12 +16,12 @@ public class AslLexer extends Lexer {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, PAREOP=6, PARECL=7, LT=8, LE=9, 
-		GT=10, GE=11, ASSIGN=12, EQUAL=13, NOTEQUAL=14, NOT=15, AND=16, OR=17, 
-		PLUS=18, MINUS=19, MUL=20, DIV=21, MOD=22, VAR=23, INT=24, BOOL=25, CHAR=26, 
-		FLOAT=27, IF=28, THEN=29, ELSE=30, ENDIF=31, WHILE=32, DO=33, ENDWHILE=34, 
-		FUNC=35, RETURN=36, ENDFUNC=37, READ=38, WRITE=39, BOOLVAL=40, INTVAL=41, 
-		CHARVAL=42, FLOATVAL=43, ID=44, STRING=45, COMMENT=46, WS=47;
+		T__0=1, T__1=2, T__2=3, PAREOP=4, PARECL=5, CLAUOP=6, CLAUCL=7, LT=8, 
+		LE=9, GT=10, GE=11, ASSIGN=12, EQUAL=13, NOTEQUAL=14, NOT=15, AND=16, 
+		OR=17, PLUS=18, MINUS=19, MUL=20, DIV=21, MOD=22, VAR=23, INT=24, BOOL=25, 
+		CHAR=26, FLOAT=27, IF=28, THEN=29, ELSE=30, ENDIF=31, WHILE=32, DO=33, 
+		ENDWHILE=34, FUNC=35, RETURN=36, ENDFUNC=37, READ=38, WRITE=39, BOOLVAL=40, 
+		INTVAL=41, CHARVAL=42, FLOATVAL=43, ID=44, STRING=45, COMMENT=46, WS=47;
 	public static String[] channelNames = {
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN"
 	};
@@ -32,9 +32,9 @@ public class AslLexer extends Lexer {
 
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"T__0", "T__1", "T__2", "T__3", "T__4", "PAREOP", "PARECL", "LT", "LE", 
-			"GT", "GE", "ASSIGN", "EQUAL", "NOTEQUAL", "NOT", "AND", "OR", "PLUS", 
-			"MINUS", "MUL", "DIV", "MOD", "VAR", "INT", "BOOL", "CHAR", "FLOAT", 
+			"T__0", "T__1", "T__2", "PAREOP", "PARECL", "CLAUOP", "CLAUCL", "LT", 
+			"LE", "GT", "GE", "ASSIGN", "EQUAL", "NOTEQUAL", "NOT", "AND", "OR", 
+			"PLUS", "MINUS", "MUL", "DIV", "MOD", "VAR", "INT", "BOOL", "CHAR", "FLOAT", 
 			"IF", "THEN", "ELSE", "ENDIF", "WHILE", "DO", "ENDWHILE", "FUNC", "RETURN", 
 			"ENDFUNC", "READ", "WRITE", "BOOLVAL", "INTVAL", "CHARVAL", "FLOATVAL", 
 			"ID", "STRING", "ESC_SEQ", "COMMENT", "WS"
@@ -44,7 +44,7 @@ public class AslLexer extends Lexer {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "':'", "','", "';'", "'['", "']'", "'('", "')'", "'<'", "'<='", 
+			null, "':'", "','", "';'", "'('", "')'", "'['", "']'", "'<'", "'<='", 
 			"'>'", "'>='", "'='", "'=='", "'!='", "'not'", "'and'", "'or'", "'+'", 
 			"'-'", "'*'", "'/'", "'%'", "'var'", "'int'", "'bool'", "'char'", "'float'", 
 			"'if'", "'then'", "'else'", "'endif'", "'while'", "'do'", "'endwhile'", 
@@ -54,12 +54,12 @@ public class AslLexer extends Lexer {
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, null, null, null, null, "PAREOP", "PARECL", "LT", "LE", "GT", 
-			"GE", "ASSIGN", "EQUAL", "NOTEQUAL", "NOT", "AND", "OR", "PLUS", "MINUS", 
-			"MUL", "DIV", "MOD", "VAR", "INT", "BOOL", "CHAR", "FLOAT", "IF", "THEN", 
-			"ELSE", "ENDIF", "WHILE", "DO", "ENDWHILE", "FUNC", "RETURN", "ENDFUNC", 
-			"READ", "WRITE", "BOOLVAL", "INTVAL", "CHARVAL", "FLOATVAL", "ID", "STRING", 
-			"COMMENT", "WS"
+			null, null, null, null, "PAREOP", "PARECL", "CLAUOP", "CLAUCL", "LT", 
+			"LE", "GT", "GE", "ASSIGN", "EQUAL", "NOTEQUAL", "NOT", "AND", "OR", 
+			"PLUS", "MINUS", "MUL", "DIV", "MOD", "VAR", "INT", "BOOL", "CHAR", "FLOAT", 
+			"IF", "THEN", "ELSE", "ENDIF", "WHILE", "DO", "ENDWHILE", "FUNC", "RETURN", 
+			"ENDFUNC", "READ", "WRITE", "BOOLVAL", "INTVAL", "CHARVAL", "FLOATVAL", 
+			"ID", "STRING", "COMMENT", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -164,8 +164,8 @@ public class AslLexer extends Lexer {
 		"\u00d5\3\2\2\2I\u00da\3\2\2\2K\u00e1\3\2\2\2M\u00e9\3\2\2\2O\u00ee\3\2"+
 		"\2\2Q\u00fd\3\2\2\2S\u0100\3\2\2\2U\u0104\3\2\2\2W\u0111\3\2\2\2Y\u011b"+
 		"\3\2\2\2[\u0122\3\2\2\2]\u012c\3\2\2\2_\u012f\3\2\2\2a\u0140\3\2\2\2c"+
-		"d\7<\2\2d\4\3\2\2\2ef\7.\2\2f\6\3\2\2\2gh\7=\2\2h\b\3\2\2\2ij\7]\2\2j"+
-		"\n\3\2\2\2kl\7_\2\2l\f\3\2\2\2mn\7*\2\2n\16\3\2\2\2op\7+\2\2p\20\3\2\2"+
+		"d\7<\2\2d\4\3\2\2\2ef\7.\2\2f\6\3\2\2\2gh\7=\2\2h\b\3\2\2\2ij\7*\2\2j"+
+		"\n\3\2\2\2kl\7+\2\2l\f\3\2\2\2mn\7]\2\2n\16\3\2\2\2op\7_\2\2p\20\3\2\2"+
 		"\2qr\7>\2\2r\22\3\2\2\2st\7>\2\2tu\7?\2\2u\24\3\2\2\2vw\7@\2\2w\26\3\2"+
 		"\2\2xy\7@\2\2yz\7?\2\2z\30\3\2\2\2{|\7?\2\2|\32\3\2\2\2}~\7?\2\2~\177"+
 		"\7?\2\2\177\34\3\2\2\2\u0080\u0081\7#\2\2\u0081\u0082\7?\2\2\u0082\36"+

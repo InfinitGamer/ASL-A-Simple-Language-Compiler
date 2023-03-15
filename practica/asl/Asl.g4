@@ -85,6 +85,7 @@ left_expr
 
 // Grammar for expressions with boolean, relational and aritmetic operators
 expr    : (op=MINUS | op=PLUS | op=NOT) expr  # unary
+        | ident CLAUOP expr CLAUCL            #arrayIndex
         | PAREOP expr PARECL                  # parenthesis
         | expr (op=MUL | op=DIV | op=MOD) expr         # arithmetic
         | expr (op=PLUS| op=MINUS) expr       # arithmetic
@@ -93,7 +94,7 @@ expr    : (op=MINUS | op=PLUS | op=NOT) expr  # unary
         | expr (op= OR) expr # or
         | (INTVAL| BOOLVAL | FLOATVAL | CHARVAL)  # value
         | ID '('(expr(','expr)*)?')'                               # functionCall
-        | left_expr                               # exprIdent
+        | ident                              # exprIdent
         ;
 
 // Identifiers
@@ -105,6 +106,8 @@ ident   : ID
 //////////////////////////////////////////////////
 PAREOP    : '(';
 PARECL    : ')';
+CLAUOP    :'[';
+CLAUCL    :']';   
 LT        : '<';
 LE        : '<=';
 GT        : '>';
