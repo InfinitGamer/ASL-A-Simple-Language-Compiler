@@ -171,17 +171,26 @@ antlrcpp::Any TypeCheckVisitor::visitArrayIndex(AslParser::ArrayIndexContext *ct
   DEBUG_ENTER();
   visit(ctx->ident());
   TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
-  putTypeDecor(ctx, t1);
+  
   bool b = getIsLValueDecor(ctx->ident());
-  putIsLValueDecor(ctx, b);
-  //porque de momento todos son variables, estos no deben de tener indice
-  if(not Types.isArrayTy(t1))Errors.nonArrayInArrayAccess(ctx);
+  
+  
+  bool array_check = not Types.isArrayTy(t1);
+  if(not Types.isErrorTy(t1) and not Types.isArrayTy(t1)){
+    Errors.nonArrayInArrayAccess(ctx);
+    b = false; // no sabemos que es
+    array_check = false;
+    t1 = Types.createErrorTy();
+  }
   visit(ctx->expr());
   TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
-  if(not Types.isIntegerTy(t2)){
-    Errors.nonIntegerIndexInArrayAccess(ctx);
+  if(not Types.isErrorTy(t2) and not Types.isIntegerTy(t2)){
+    Errors.nonIntegerIndexInArrayAccess(ctx->expr());
   }
+  if (array_check) t1 = Types.getArrayElemType(t1);//si la array existe, entonces damos el tipo basico que le corresponde
   
+  putTypeDecor(ctx, t1);
+  putIsLValueDecor(ctx, b);
   DEBUG_EXIT();
   return 0;
 }
@@ -256,17 +265,26 @@ antlrcpp::Any TypeCheckVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx)
   DEBUG_ENTER();
   visit(ctx->ident());
   TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
-  putTypeDecor(ctx, t1);
+  
   bool b = getIsLValueDecor(ctx->ident());
-  putIsLValueDecor(ctx, b);
+  
   if(ctx->expr()){
-    if(not Types.isArrayTy(t1))Errors.nonArrayInArrayAccess(ctx);
+    bool array_check = not Types.isArrayTy(t1);
+    if(not Types.isErrorTy(t1) and not Types.isArrayTy(t1)){
+      Errors.nonArrayInArrayAccess(ctx);
+      b = false; // no sabemos que es
+      array_check = false;
+      t1 = Types.createErrorTy();
+    }
     visit(ctx->expr());
     TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
-    if(not Types.isIntegerTy(t2)){
-      Errors.nonIntegerIndexInArrayAccess(ctx);
+    if(not Types.isErrorTy(t2) and not Types.isIntegerTy(t2)){
+      Errors.nonIntegerIndexInArrayAccess(ctx->expr());
     }
+    if (array_check) t1 = Types.getArrayElemType(t1);//si la array existe, entonces damos el tipo basico que le corresponde
   }
+  putTypeDecor(ctx, t1);
+  putIsLValueDecor(ctx, b);
   DEBUG_EXIT();
   return 0;
 }
