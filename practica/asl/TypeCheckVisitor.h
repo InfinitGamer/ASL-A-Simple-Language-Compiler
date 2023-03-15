@@ -85,6 +85,7 @@ public:
   antlrcpp::Any visitOr(AslParser::OrContext *ctx);
   antlrcpp::Any visitWhileStmt(AslParser::WhileStmtContext *ctx);
   antlrcpp::Any visitReturn(AslParser::ReturnContext *ctx);
+  antlrcpp::Any visitFunctionCall(AslParser::FunctionCallContext *ctx);
 private:
 
   // Attributes

@@ -265,7 +265,7 @@ antlrcpp::Any CodeGenVisitor::visitValue(AslParser::ValueContext *ctx) {
 
 antlrcpp::Any CodeGenVisitor::visitExprIdent(AslParser::ExprIdentContext *ctx) {
   DEBUG_ENTER();
-  CodeAttribs && codAts = visit(ctx->ident());
+  CodeAttribs && codAts = visit(ctx->left_expr());
   DEBUG_EXIT();
   return codAts;
 }
