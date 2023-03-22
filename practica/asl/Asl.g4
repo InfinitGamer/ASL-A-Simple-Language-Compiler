@@ -38,7 +38,7 @@ program : function+ EOF
 
 // A function has a name, a list of parameters and a list of statements
 function
-        : FUNC ID (':' basic_type=type)? '(' (param (',' param)*)? ')' (':' type)? declarations statements ENDFUNC
+        : FUNC ID'(' (param (',' param)*)? ')' (':' basic_type=type)? declarations statements ENDFUNC
         ;
 
 declarations
@@ -52,7 +52,8 @@ param
         : ID ':' type
         ;
 
-type    : (INT | BOOL | FLOAT |CHAR)
+type    : (INT | BOOL | FLOAT |CHAR)            # basicType
+        | 'array' '[' INTVAL ']' 'of' (INT | BOOL | FLOAT |CHAR) # arrayType 
         ;
 
 statements
@@ -74,6 +75,7 @@ statement
         | WRITE expr ';'                      # writeExpr
           // Write a string
         | WRITE STRING ';'                    # writeString
+        | ID '('(expr(','expr)*)?')' ';'        # methodCall    
         | RETURN (expr)? ';'                  # return         
         ;
 
@@ -93,8 +95,8 @@ expr    : (op=MINUS | op=PLUS | op=NOT) expr  # unary
         | expr (op=AND) expr # and
         | expr (op= OR) expr # or
         | (INTVAL| BOOLVAL | FLOATVAL | CHARVAL)  # value
-        | ID '('(expr(','expr)*)?')'                               # functionCall
         | ident                              # exprIdent
+        | ID '('(expr(','expr)*)?')'         # functionCall
         ;
 
 // Identifiers

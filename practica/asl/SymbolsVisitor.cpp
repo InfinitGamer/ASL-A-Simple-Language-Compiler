@@ -42,7 +42,7 @@
 #include <cstddef>    // std::size_t
 
 // uncomment the following line to enable debugging messages with DEBUG*
-// #define DEBUG_BUILD
+//#define DEBUG_BUILD
 #include "../common/debug.h"
 
 // using namespace std;
@@ -142,24 +142,45 @@ antlrcpp::Any SymbolsVisitor::visitParam(AslParser::ParamContext *ctx){
   DEBUG_EXIT();
   return 0;
 }
-antlrcpp::Any SymbolsVisitor::visitType(AslParser::TypeContext *ctx) {
+
+antlrcpp::Any SymbolsVisitor::visitBasicType(AslParser::BasicTypeContext *ctx) {
   DEBUG_ENTER();
+  TypesMgr::TypeId t = Types.createErrorTy(); 
   if (ctx->INT()) {
-    TypesMgr::TypeId t = Types.createIntegerTy();
-    putTypeDecor(ctx, t);
+    t = Types.createIntegerTy();
   }
   else if(ctx -> BOOL()){
-    TypesMgr::TypeId t = Types.createBooleanTy();
-    putTypeDecor(ctx, t);
+    t = Types.createBooleanTy();
   }
   else if(ctx -> CHAR()){
-    TypesMgr::TypeId t = Types.createCharacterTy();
-    putTypeDecor(ctx, t);
+    t = Types.createCharacterTy();
   }
   else if(ctx -> FLOAT()){
-    TypesMgr::TypeId t = Types.createFloatTy();
-    putTypeDecor(ctx, t);
+    t = Types.createFloatTy();
   }
+  putTypeDecor(ctx, t);
+  DEBUG_EXIT();
+  return 0;
+}
+
+antlrcpp::Any SymbolsVisitor::visitArrayType(AslParser::ArrayTypeContext *ctx) {
+  DEBUG_ENTER();
+  std::string tempStr = ctx->INTVAL()->getText();
+  int size = stoi(tempStr);
+  TypesMgr::TypeId t = Types.createErrorTy(); 
+  if (ctx->INT()) {
+    t = Types.createArrayTy(size, Types.createIntegerTy());
+  }
+  else if(ctx -> BOOL()){
+    t = Types.createArrayTy(size, Types.createBooleanTy());
+  }
+  else if(ctx -> CHAR()){
+    t = Types.createArrayTy(size, Types.createCharacterTy());
+  }
+  else if(ctx -> FLOAT()){
+    t = Types.createArrayTy(size, Types.createFloatTy());
+  }
+  putTypeDecor(ctx, t);
   DEBUG_EXIT();
   return 0;
 }

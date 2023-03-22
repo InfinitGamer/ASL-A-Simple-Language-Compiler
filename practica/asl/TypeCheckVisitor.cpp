@@ -39,7 +39,7 @@
 #include <string>
 
 // uncomment the following line to enable debugging messages with DEBUG*
-// #define DEBUG_BUILD
+//#define DEBUG_BUILD
 #include "../common/debug.h"
 
 // using namespace std;
@@ -96,22 +96,64 @@ antlrcpp::Any TypeCheckVisitor::visitFunctionCall(AslParser::FunctionCallContext
   DEBUG_ENTER();
   TypesMgr::TypeId tRet = Types.createErrorTy();
   if(not Symbols.isFunctionClass(ctx->ID()->getText())){
-    Errors.undeclaredIdent(ctx->ID());
+    Errors.isNotCallable(ctx);
   }
   else{
     TypesMgr::TypeId t1 = Symbols.getGlobalFunctionType(ctx->ID()->getText());
-    tRet = Types.getFuncReturnType(t1);
-    //TypesMgr:Ty
+    TypesMgr::TypeId tAux = Types.getFuncReturnType(t1);
+    if(Types.isVoidTy(tAux)){
+      Errors.isNotFunction(ctx);
+    }
+    else{
+      tRet = tAux;
+    }
+    std::vector<TypesMgr::TypeId> lParamsTy = Types.getFuncParamsTypes(t1);
+    if(lParamsTy.size() != ctx->expr().size()){
+      Errors.numberOfParameters(ctx);
+    }
+    else{
+      for(int i = 0; i < lParamsTy.size(); i++){
+        visit(ctx->expr(i));
+        if(!Types.equalTypes(lParamsTy[i], getTypeDecor(ctx->expr(i)))){
+          Errors.incompatibleParameter(ctx->expr(i), i+1, ctx);
+        }
+      }
+    }
   }
-  
-  
-  
-  
   putTypeDecor(ctx, tRet);
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
   return 0;
 }
+
+antlrcpp::Any TypeCheckVisitor::visitMethodCall(AslParser::MethodCallContext *ctx){
+  DEBUG_ENTER();
+  TypesMgr::TypeId tRet = Types.createErrorTy();
+  if(not Symbols.isFunctionClass(ctx->ID()->getText())){
+    Errors.undeclaredIdent(ctx->ID());
+  }
+  else{
+    TypesMgr::TypeId t1 = Symbols.getGlobalFunctionType(ctx->ID()->getText());
+    tRet = Types.getFuncReturnType(t1);
+    std::vector<TypesMgr::TypeId> lParamsTy = Types.getFuncParamsTypes(t1);
+    if(lParamsTy.size() != ctx->expr().size()){
+      Errors.numberOfParameters(ctx);
+    }
+    else{
+      for(int i = 0; i < lParamsTy.size(); i++){
+        visit(ctx->expr(i));
+        if(lParamsTy[i] != getTypeDecor(ctx->expr(i))){
+          Errors.incompatibleParameter(ctx->expr(i), i+1, ctx);
+        }
+      }
+    }
+  }
+  putTypeDecor(ctx, tRet);
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
+
 antlrcpp::Any TypeCheckVisitor::visitReturn(AslParser::ReturnContext *ctx){
   DEBUG_ENTER();
   TypesMgr::TypeId tRet = Types.createVoidTy();
