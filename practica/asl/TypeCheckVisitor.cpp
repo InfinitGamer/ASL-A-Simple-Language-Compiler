@@ -311,8 +311,8 @@ antlrcpp::Any TypeCheckVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx)
   bool b = getIsLValueDecor(ctx->ident());
   
   if(ctx->expr()){
-    bool array_check = not Types.isArrayTy(t1);
-    if(not Types.isErrorTy(t1) and not Types.isArrayTy(t1)){
+    bool array_check = Types.isArrayTy(t1);
+    if(not Types.isErrorTy(t1) and not array_check){
       Errors.nonArrayInArrayAccess(ctx);
       b = false; // no sabemos que es
       array_check = false;
