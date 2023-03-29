@@ -85,7 +85,12 @@ antlrcpp::Any TypeCheckVisitor::visitProgram(AslParser::ProgramContext *ctx) {
 antlrcpp::Any TypeCheckVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   DEBUG_ENTER();
   SymTable::ScopeId sc = getScopeDecor(ctx);
-  TypesMgr::TypeId ty = Types.getFuncReturnType(Symbols.getGlobalFunctionType(ctx->ID()->getText()));
+  TypesMgr::TypeId ty = Types.createVoidTy();
+  if(ctx ->basic_type){
+    visit(ctx ->basic_type);
+    ty = getTypeDecor(ctx->basic_type);
+  }
+  
   setCurrentFunctionTy(ty);
   Symbols.pushThisScope(sc);
   // Symbols.print();
@@ -178,6 +183,7 @@ antlrcpp::Any TypeCheckVisitor::visitReturn(AslParser::ReturnContext *ctx){
     visit(ctx->expr());
     tRet = getTypeDecor(ctx->expr());
   }
+ 
   if(not Types.copyableTypes(getCurrentFunctionTy(), tRet)){
     Errors.incompatibleReturn(ctx->RETURN());
   }
