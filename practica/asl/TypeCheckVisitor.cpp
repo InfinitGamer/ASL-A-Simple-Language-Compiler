@@ -85,6 +85,8 @@ antlrcpp::Any TypeCheckVisitor::visitProgram(AslParser::ProgramContext *ctx) {
 antlrcpp::Any TypeCheckVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   DEBUG_ENTER();
   SymTable::ScopeId sc = getScopeDecor(ctx);
+  TypesMgr::TypeId ty = Types.getFuncReturnType(Symbols.getGlobalFunctionType(ctx->ID()->getText()));
+  setCurrentFunctionTy(ty);
   Symbols.pushThisScope(sc);
   // Symbols.print();
   visit(ctx->statements());
@@ -95,8 +97,16 @@ antlrcpp::Any TypeCheckVisitor::visitFunction(AslParser::FunctionContext *ctx) {
 antlrcpp::Any TypeCheckVisitor::visitFunctionCall(AslParser::FunctionCallContext *ctx){
   DEBUG_ENTER();
   TypesMgr::TypeId tRet = Types.createErrorTy();
+  for(auto expr : ctx->expr()){
+        visit(expr);
+  }
   if(not Symbols.isFunctionClass(ctx->ID()->getText())){
-    Errors.isNotCallable(ctx);
+    if(not Symbols.findInCurrentScope(ctx->ID()->getText())){
+      Errors.undeclaredIdent(ctx->ID());
+    }
+    else{
+      Errors.isNotCallable(ctx);
+    }
   }
   else{
     TypesMgr::TypeId t1 = Symbols.getGlobalFunctionType(ctx->ID()->getText());
@@ -108,13 +118,13 @@ antlrcpp::Any TypeCheckVisitor::visitFunctionCall(AslParser::FunctionCallContext
       tRet = tAux;
     }
     std::vector<TypesMgr::TypeId> lParamsTy = Types.getFuncParamsTypes(t1);
+    
     if(lParamsTy.size() != ctx->expr().size()){
       Errors.numberOfParameters(ctx);
     }
     else{
       for(int i = 0; i < lParamsTy.size(); i++){
-        visit(ctx->expr(i));
-        if(!Types.equalTypes(lParamsTy[i], getTypeDecor(ctx->expr(i)))){
+        if(!Types.isErrorTy(getTypeDecor(ctx->expr(i))) && !Types.copyableTypes(lParamsTy[i], getTypeDecor(ctx->expr(i)))){
           Errors.incompatibleParameter(ctx->expr(i), i+1, ctx);
         }
       }
@@ -128,9 +138,17 @@ antlrcpp::Any TypeCheckVisitor::visitFunctionCall(AslParser::FunctionCallContext
 
 antlrcpp::Any TypeCheckVisitor::visitMethodCall(AslParser::MethodCallContext *ctx){
   DEBUG_ENTER();
+  for(auto expr : ctx->expr()){
+        visit(expr);
+  }
   TypesMgr::TypeId tRet = Types.createErrorTy();
   if(not Symbols.isFunctionClass(ctx->ID()->getText())){
-    Errors.undeclaredIdent(ctx->ID());
+    if(not Symbols.findInCurrentScope(ctx->ID()->getText())){
+      Errors.undeclaredIdent(ctx->ID());
+    }
+    else{
+      Errors.isNotCallable(ctx);
+    }
   }
   else{
     TypesMgr::TypeId t1 = Symbols.getGlobalFunctionType(ctx->ID()->getText());
@@ -141,8 +159,7 @@ antlrcpp::Any TypeCheckVisitor::visitMethodCall(AslParser::MethodCallContext *ct
     }
     else{
       for(int i = 0; i < lParamsTy.size(); i++){
-        visit(ctx->expr(i));
-        if(lParamsTy[i] != getTypeDecor(ctx->expr(i))){
+        if(!Types.isErrorTy(getTypeDecor(ctx->expr(i))) && !Types.copyableTypes(lParamsTy[i], getTypeDecor(ctx->expr(i)))){
           Errors.incompatibleParameter(ctx->expr(i), i+1, ctx);
         }
       }
@@ -160,6 +177,9 @@ antlrcpp::Any TypeCheckVisitor::visitReturn(AslParser::ReturnContext *ctx){
   if(ctx->expr()){
     visit(ctx->expr());
     tRet = getTypeDecor(ctx->expr());
+  }
+  if(not Types.copyableTypes(getCurrentFunctionTy(), tRet)){
+    Errors.incompatibleReturn(ctx->RETURN());
   }
   putTypeDecor(ctx, tRet);
   putIsLValueDecor(ctx, false);
@@ -217,7 +237,7 @@ antlrcpp::Any TypeCheckVisitor::visitArrayIndex(AslParser::ArrayIndexContext *ct
   bool b = getIsLValueDecor(ctx->ident());
   
   
-  bool array_check = not Types.isArrayTy(t1);
+  bool array_check = Types.isArrayTy(t1);
   if(not Types.isErrorTy(t1) and not Types.isArrayTy(t1)){
     Errors.nonArrayInArrayAccess(ctx);
     b = false; // no sabemos que es
@@ -337,9 +357,7 @@ antlrcpp::Any TypeCheckVisitor::visitArithmetic(AslParser::ArithmeticContext *ct
   TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(0));
   visit(ctx->expr(1));
   TypesMgr::TypeId t2 = getTypeDecor(ctx->expr(1));
-  if (((not Types.isErrorTy(t1)) and (not Types.isNumericTy(t1))) or
-      ((not Types.isErrorTy(t2)) and (not Types.isNumericTy(t2))))
-    Errors.incompatibleOperator(ctx->op);
+  
   TypesMgr::TypeId t;
   //caso en que los dos nodos son integer -> integer
   if((not Types.isErrorTy(t1)) and (not Types.isErrorTy(t2)) and 
@@ -351,6 +369,15 @@ antlrcpp::Any TypeCheckVisitor::visitArithmetic(AslParser::ArithmeticContext *ct
 
   //por default de error decimos que es como si fuera un nodo integer  
   else t = Types.createIntegerTy();
+  if (((not Types.isErrorTy(t1)) and (not Types.isNumericTy(t1))) or
+      ((not Types.isErrorTy(t2)) and (not Types.isNumericTy(t2))))
+    Errors.incompatibleOperator(ctx->op);
+  else if(ctx->MOD()){
+    if (((not Types.isErrorTy(t1)) and (not Types.isIntegerTy(t1))) or
+      ((not Types.isErrorTy(t2)) and (not Types.isIntegerTy(t2))))
+      Errors.incompatibleOperator(ctx->op);
+    t = Types.createIntegerTy();
+  }
   putTypeDecor(ctx, t);
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
