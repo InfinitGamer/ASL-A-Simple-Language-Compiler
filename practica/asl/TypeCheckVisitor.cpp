@@ -374,7 +374,10 @@ antlrcpp::Any TypeCheckVisitor::visitArithmetic(AslParser::ArithmeticContext *ct
            Types.isNumericTy(t1) and Types.isNumericTy(t2)) t = Types.createFloatTy();
 
   //por default de error decimos que es como si fuera un nodo integer  
-  else t = Types.createIntegerTy();
+  else{
+  if(Types.isFloatTy(t1) or Types.isFloatTy(t2))t = Types.createFloatTy();
+    else t = Types.createIntegerTy();
+   }
   if (((not Types.isErrorTy(t1)) and (not Types.isNumericTy(t1))) or
       ((not Types.isErrorTy(t2)) and (not Types.isNumericTy(t2))))
     Errors.incompatibleOperator(ctx->op);
