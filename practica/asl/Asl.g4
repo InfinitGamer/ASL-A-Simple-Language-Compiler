@@ -52,8 +52,8 @@ param
         : ID ':' type
         ;
 
-type    : (INT | BOOL | FLOAT |CHAR)            # basicType
-        | 'array' '[' INTVAL ']' 'of' (INT | BOOL | FLOAT |CHAR) # arrayType 
+type    : BASIC_TYPE           # basicType
+        | 'array' '[' INTVAL ']' 'of' BASIC_TYPE # arrayType 
         ;
 
 statements
@@ -126,6 +126,7 @@ MUL       : '*';
 DIV       : '/';
 MOD       : '%';
 VAR       : 'var';
+BASIC_TYPE:(INT | BOOL | CHAR |FLOAT);
 INT       : 'int';
 BOOL      : 'bool';
 CHAR      : 'char';
