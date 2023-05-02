@@ -81,13 +81,14 @@ statement
 
 // Grammar for left expressions (l-values in C++)
 left_expr
-        : ident CLAUOP expr CLAUCL
+        : PAREOP left_expr PARECL
+        | left_expr CLAUOP expr CLAUCL
         | ident
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
 expr    : (op=MINUS | op=PLUS | op=NOT) expr  # unary
-        | ident CLAUOP expr CLAUCL            #arrayIndex
+        | left_expr CLAUOP expr CLAUCL            #arrayIndex
         | PAREOP expr PARECL                  # parenthesis
         | expr (op=MUL | op=DIV | op=MOD) expr         # arithmetic
         | expr (op=PLUS| op=MINUS) expr       # arithmetic
