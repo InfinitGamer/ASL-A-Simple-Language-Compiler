@@ -38,7 +38,7 @@ program : function+ EOF
 
 // A function has a name, a list of parameters and a list of statements
 function
-        : FUNC ID'(' (param (',' param)*)? ')' (':' basic_type=type)? declarations statements ENDFUNC
+        : FUNC ID PAREOP (param (',' param)*)? PARECL (':' basic_type=type)? declarations statements ENDFUNC
         ;
 
 declarations
@@ -52,8 +52,8 @@ param
         : ID ':' type
         ;
 
-type    : (INT | BOOL | FLOAT |CHAR)            # basicType
-        | 'array' '[' INTVAL ']' 'of' (INT | BOOL | FLOAT |CHAR) # arrayType 
+type    : BASIC_TYPE           # basicType
+        | 'array' CLAUOP INTVAL CLAUCL 'of' BASIC_TYPE # arrayType 
         ;
 
 statements
@@ -68,20 +68,20 @@ statement
         | IF expr THEN statements (ELSE statements)? ENDIF   # ifStmt
           // A function/procedure call has a list of arguments in parenthesis (possibly empty)
         | WHILE expr DO statements ENDWHILE   # whileStmt
-        | ident '(' ')' ';'                   # procCall
+        | ident PAREOP PARECL ';'                   # procCall
           // Read a variable
         | READ left_expr ';'                  # readStmt
           // Write an expression
         | WRITE expr ';'                      # writeExpr
           // Write a string
         | WRITE STRING ';'                    # writeString
-        | ID '('(expr(','expr)*)?')' ';'        # methodCall    
+        | ID PAREOP (expr(','expr)*)? PARECL ';'        # methodCall    
         | RETURN (expr)? ';'                  # return         
         ;
 
 // Grammar for left expressions (l-values in C++)
 left_expr
-        : ident '['expr']'
+        : ident CLAUOP expr CLAUCL
         | ident
         ;
 
@@ -95,8 +95,8 @@ expr    : (op=MINUS | op=PLUS | op=NOT) expr  # unary
         | expr (op=AND) expr # and
         | expr (op= OR) expr # or
         | (INTVAL| BOOLVAL | FLOATVAL | CHARVAL)  # value
+        | ID PAREOP (expr(','expr)*)? PARECL         # functionCall
         | ident                              # exprIdent
-        | ID '('(expr(','expr)*)?')'         # functionCall
         ;
 
 // Identifiers
@@ -126,6 +126,7 @@ MUL       : '*';
 DIV       : '/';
 MOD       : '%';
 VAR       : 'var';
+BASIC_TYPE:(INT | BOOL | CHAR |FLOAT);
 INT       : 'int';
 BOOL      : 'bool';
 CHAR      : 'char';

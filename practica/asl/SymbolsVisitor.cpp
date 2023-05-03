@@ -146,16 +146,16 @@ antlrcpp::Any SymbolsVisitor::visitParam(AslParser::ParamContext *ctx){
 antlrcpp::Any SymbolsVisitor::visitBasicType(AslParser::BasicTypeContext *ctx) {
   DEBUG_ENTER();
   TypesMgr::TypeId t = Types.createErrorTy(); 
-  if (ctx->INT()) {
+  if (ctx->BASIC_TYPE()->getText() == "int") {
     t = Types.createIntegerTy();
   }
-  else if(ctx -> BOOL()){
+  else if(ctx->BASIC_TYPE()->getText() == "bool"){
     t = Types.createBooleanTy();
   }
-  else if(ctx -> CHAR()){
+  else if(ctx->BASIC_TYPE()->getText() == "char"){
     t = Types.createCharacterTy();
   }
-  else if(ctx -> FLOAT()){
+  else if(ctx->BASIC_TYPE()->getText() == "float"){
     t = Types.createFloatTy();
   }
   putTypeDecor(ctx, t);
@@ -168,16 +168,16 @@ antlrcpp::Any SymbolsVisitor::visitArrayType(AslParser::ArrayTypeContext *ctx) {
   std::string tempStr = ctx->INTVAL()->getText();
   int size = stoi(tempStr);
   TypesMgr::TypeId t = Types.createErrorTy(); 
-  if (ctx->INT()) {
+  if (ctx->BASIC_TYPE()->getText() == "int") {
     t = Types.createArrayTy(size, Types.createIntegerTy());
   }
-  else if(ctx -> BOOL()){
+  else if(ctx->BASIC_TYPE()->getText() == "bool"){
     t = Types.createArrayTy(size, Types.createBooleanTy());
   }
-  else if(ctx -> CHAR()){
+  else if(ctx->BASIC_TYPE()->getText() == "char"){
     t = Types.createArrayTy(size, Types.createCharacterTy());
   }
-  else if(ctx -> FLOAT()){
+  else if(ctx->BASIC_TYPE()->getText() == "float"){
     t = Types.createArrayTy(size, Types.createFloatTy());
   }
   putTypeDecor(ctx, t);
