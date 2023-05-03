@@ -237,10 +237,10 @@ antlrcpp::Any TypeCheckVisitor::visitAssignStmt(AslParser::AssignStmtContext *ct
 }
 antlrcpp::Any TypeCheckVisitor::visitArrayIndex(AslParser::ArrayIndexContext *ctx){
   DEBUG_ENTER();
-  visit(ctx->ident());
-  TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
+  visit(ctx->left_expr());
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->left_expr());
   
-  bool b = getIsLValueDecor(ctx->ident());
+  bool b = getIsLValueDecor(ctx->left_expr());
   
   
   bool array_check = Types.isArrayTy(t1);
@@ -331,12 +331,13 @@ antlrcpp::Any TypeCheckVisitor::visitWriteExpr(AslParser::WriteExprContext *ctx)
 
 antlrcpp::Any TypeCheckVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx) {
   DEBUG_ENTER();
-  visit(ctx->ident());
-  TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
-  
-  bool b = getIsLValueDecor(ctx->ident());
+  TypesMgr::TypeId t1;
+  bool b = false;
   
   if(ctx->expr()){
+    visit(ctx->left_expr());
+    t1 = getTypeDecor(ctx->left_expr());
+    b = getIsLValueDecor(ctx->left_expr());
     bool array_check = Types.isArrayTy(t1);
     if(not Types.isErrorTy(t1) and not array_check){
       Errors.nonArrayInArrayAccess(ctx);
@@ -350,6 +351,16 @@ antlrcpp::Any TypeCheckVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx)
       Errors.nonIntegerIndexInArrayAccess(ctx->expr());
     }
     if (array_check) t1 = Types.getArrayElemType(t1);//si la array existe, entonces damos el tipo basico que le corresponde
+  }
+  else if(ctx->left_expr()){
+    visit(ctx->left_expr());
+    t1 = getTypeDecor(ctx->left_expr());
+    b = getIsLValueDecor(ctx->left_expr());
+  }
+  else{
+    visit(ctx->ident());
+    t1= getTypeDecor(ctx->ident());
+    b = getIsLValueDecor(ctx->ident());
   }
   putTypeDecor(ctx, t1);
   putIsLValueDecor(ctx, b);
