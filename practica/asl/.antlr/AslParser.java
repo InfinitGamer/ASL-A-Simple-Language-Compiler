@@ -1075,50 +1075,50 @@ public class AslParser extends Parser {
 				break;
 			case 5:
 				{
-				_localctx = new ExprIdentContext(_localctx);
-				_ctx = _localctx;
-				_prevctx = _localctx;
-				setState(171);
-				ident();
-				}
-				break;
-			case 6:
-				{
 				_localctx = new FunctionCallContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(172);
+				setState(171);
 				match(ID);
-				setState(173);
+				setState(172);
 				match(PAREOP);
-				setState(182);
+				setState(181);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << PAREOP) | (1L << NOT) | (1L << PLUS) | (1L << MINUS) | (1L << BOOLVAL) | (1L << INTVAL) | (1L << CHARVAL) | (1L << FLOATVAL) | (1L << ID))) != 0)) {
 					{
-					setState(174);
+					setState(173);
 					expr(0);
-					setState(179);
+					setState(178);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 					while (_la==T__0) {
 						{
 						{
-						setState(175);
+						setState(174);
 						match(T__0);
-						setState(176);
+						setState(175);
 						expr(0);
 						}
 						}
-						setState(181);
+						setState(180);
 						_errHandler.sync(this);
 						_la = _input.LA(1);
 					}
 					}
 				}
 
-				setState(184);
+				setState(183);
 				match(PARECL);
+				}
+				break;
+			case 6:
+				{
+				_localctx = new ExprIdentContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(184);
+				ident();
 				}
 				break;
 			}
@@ -1361,8 +1361,8 @@ public class AslParser extends Parser {
 		"\t\f\t\16\t\u0088\13\t\5\t\u008a\n\t\3\t\3\t\3\t\3\t\5\t\u0090\n\t\3\t"+
 		"\5\t\u0093\n\t\3\n\3\n\3\n\3\n\3\n\3\n\5\n\u009b\n\n\3\13\3\13\3\13\3"+
 		"\13\5\13\u00a1\n\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13"+
-		"\3\13\3\13\3\13\3\13\3\13\3\13\3\13\7\13\u00b4\n\13\f\13\16\13\u00b7\13"+
-		"\13\5\13\u00b9\n\13\3\13\5\13\u00bc\n\13\3\13\3\13\3\13\3\13\5\13\u00c2"+
+		"\3\13\3\13\3\13\3\13\3\13\3\13\7\13\u00b3\n\13\f\13\16\13\u00b6\13\13"+
+		"\5\13\u00b8\n\13\3\13\3\13\5\13\u00bc\n\13\3\13\3\13\3\13\3\13\5\13\u00c2"+
 		"\n\13\3\13\3\13\3\13\3\13\5\13\u00c8\n\13\3\13\3\13\3\13\3\13\3\13\3\13"+
 		"\3\13\3\13\5\13\u00d2\n\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\7\13\u00db"+
 		"\n\13\f\13\16\13\u00de\13\13\3\f\3\f\3\f\2\3\24\r\2\4\6\b\n\f\16\20\22"+
@@ -1403,13 +1403,13 @@ public class AslParser extends Parser {
 		"\u00bc\5\24\13\r\u00a3\u00a4\5\26\f\2\u00a4\u00a5\7\n\2\2\u00a5\u00a6"+
 		"\5\24\13\2\u00a6\u00a7\7\13\2\2\u00a7\u00bc\3\2\2\2\u00a8\u00a9\7\b\2"+
 		"\2\u00a9\u00aa\5\24\13\2\u00aa\u00ab\7\t\2\2\u00ab\u00bc\3\2\2\2\u00ac"+
-		"\u00bc\t\2\2\2\u00ad\u00bc\5\26\f\2\u00ae\u00af\7\61\2\2\u00af\u00b8\7"+
-		"\b\2\2\u00b0\u00b5\5\24\13\2\u00b1\u00b2\7\3\2\2\u00b2\u00b4\5\24\13\2"+
-		"\u00b3\u00b1\3\2\2\2\u00b4\u00b7\3\2\2\2\u00b5\u00b3\3\2\2\2\u00b5\u00b6"+
-		"\3\2\2\2\u00b6\u00b9\3\2\2\2\u00b7\u00b5\3\2\2\2\u00b8\u00b0\3\2\2\2\u00b8"+
-		"\u00b9\3\2\2\2\u00b9\u00ba\3\2\2\2\u00ba\u00bc\7\t\2\2\u00bb\u009c\3\2"+
-		"\2\2\u00bb\u00a3\3\2\2\2\u00bb\u00a8\3\2\2\2\u00bb\u00ac\3\2\2\2\u00bb"+
-		"\u00ad\3\2\2\2\u00bb\u00ae\3\2\2\2\u00bc\u00dc\3\2\2\2\u00bd\u00c1\f\n"+
+		"\u00bc\t\2\2\2\u00ad\u00ae\7\61\2\2\u00ae\u00b7\7\b\2\2\u00af\u00b4\5"+
+		"\24\13\2\u00b0\u00b1\7\3\2\2\u00b1\u00b3\5\24\13\2\u00b2\u00b0\3\2\2\2"+
+		"\u00b3\u00b6\3\2\2\2\u00b4\u00b2\3\2\2\2\u00b4\u00b5\3\2\2\2\u00b5\u00b8"+
+		"\3\2\2\2\u00b6\u00b4\3\2\2\2\u00b7\u00af\3\2\2\2\u00b7\u00b8\3\2\2\2\u00b8"+
+		"\u00b9\3\2\2\2\u00b9\u00bc\7\t\2\2\u00ba\u00bc\5\26\f\2\u00bb\u009c\3"+
+		"\2\2\2\u00bb\u00a3\3\2\2\2\u00bb\u00a8\3\2\2\2\u00bb\u00ac\3\2\2\2\u00bb"+
+		"\u00ad\3\2\2\2\u00bb\u00ba\3\2\2\2\u00bc\u00dc\3\2\2\2\u00bd\u00c1\f\n"+
 		"\2\2\u00be\u00c2\7\30\2\2\u00bf\u00c2\7\31\2\2\u00c0\u00c2\7\32\2\2\u00c1"+
 		"\u00be\3\2\2\2\u00c1\u00bf\3\2\2\2\u00c1\u00c0\3\2\2\2\u00c2\u00c3\3\2"+
 		"\2\2\u00c3\u00db\5\24\13\13\u00c4\u00c7\f\t\2\2\u00c5\u00c8\7\26\2\2\u00c6"+
@@ -1424,7 +1424,7 @@ public class AslParser extends Parser {
 		"\u00c4\3\2\2\2\u00da\u00ca\3\2\2\2\u00da\u00d4\3\2\2\2\u00da\u00d7\3\2"+
 		"\2\2\u00db\u00de\3\2\2\2\u00dc\u00da\3\2\2\2\u00dc\u00dd\3\2\2\2\u00dd"+
 		"\25\3\2\2\2\u00de\u00dc\3\2\2\2\u00df\u00e0\7\61\2\2\u00e0\27\3\2\2\2"+
-		"\31\33\'*/8ARWe\u0086\u0089\u008f\u0092\u009a\u00a0\u00b5\u00b8\u00bb"+
+		"\31\33\'*/8ARWe\u0086\u0089\u008f\u0092\u009a\u00a0\u00b4\u00b7\u00bb"+
 		"\u00c1\u00c7\u00d1\u00da\u00dc";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());

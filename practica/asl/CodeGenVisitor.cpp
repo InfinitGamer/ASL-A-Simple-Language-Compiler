@@ -206,6 +206,9 @@ antlrcpp::Any CodeGenVisitor::visitWriteExpr(AslParser::WriteExprContext *ctx) {
   else if(Types.isCharacterTy(tid1)){
     code = code1 || instruction::WRITEC(addr1);
   }
+  else if(Types.isBooleanTy(tid1)){
+    code = code1 || instruction::WRITEI(addr1);
+  }
   DEBUG_EXIT();
   return code;
 }
@@ -239,19 +242,26 @@ antlrcpp::Any CodeGenVisitor::visitArithmetic(AslParser::ArithmeticContext *ctx)
   TypesMgr::TypeId t2 = getTypeDecor(ctx->expr(1));
   TypesMgr::TypeId  t = getTypeDecor(ctx);
   std::string temp = "%"+codeCounters.newTEMP();
+  std::string temp1 = addr1;
+  std::string temp2 = addr2;
+
   if(Types.isFloatTy(t)){
-    if(Types.isFloatTy(t1))
-      code = code || instruction::FLOAT(addr1, addr1);
-    if(Types.isFloatTy(t2))
-      code = code || instruction::FLOAT(addr2, addr2);
+    if(Types.isIntegerTy(t1)){
+      temp1 = "%"+codeCounters.newTEMP();
+      code = code || instruction::FLOAT(temp1, addr1);
+    }
+    if(Types.isIntegerTy(t2)){
+      temp2 = "%"+codeCounters.newTEMP();
+      code = code || instruction::FLOAT(temp2, addr2);
+    }
     if (ctx->MUL())
-      code = code || instruction::FMUL(temp, addr1, addr2);
+      code = code || instruction::FMUL(temp, temp1, temp2);
     else if (ctx->DIV())
-      code = code || instruction::FDIV(temp, addr1, addr2);
+      code = code || instruction::FDIV(temp, temp1, temp2);
     else if(ctx->PLUS())
-      code = code || instruction::FADD(temp, addr1, addr2);
+      code = code || instruction::FADD(temp, temp1, temp2);
     else if (ctx->MINUS())
-      code = code || instruction::FSUB(temp, addr1, addr2);
+      code = code || instruction::FSUB(temp, temp1, temp2);
   }
   else{
     if (ctx->MUL())
@@ -286,25 +296,32 @@ antlrcpp::Any CodeGenVisitor::visitRelational(AslParser::RelationalContext *ctx)
   TypesMgr::TypeId t2 = getTypeDecor(ctx->expr(1));
   TypesMgr::TypeId  t = getTypeDecor(ctx);
   std::string temp = "%"+codeCounters.newTEMP();
+  std::string temp1 = addr1;
+  std::string temp2 = addr2;
+
   if(Types.isFloatTy(t)){
-    if(Types.isFloatTy(t1))
-      code = code || instruction::FLOAT(addr1, addr1);
-    if(Types.isFloatTy(t2))
-      code = code || instruction::FLOAT(addr2, addr2);
+    if(Types.isIntegerTy(t1)){
+      temp1 = "%"+codeCounters.newTEMP();
+      code = code || instruction::FLOAT(temp1, addr1);
+    }
+    if(Types.isIntegerTy(t2)){
+      temp2 = "%"+codeCounters.newTEMP();
+      code = code || instruction::FLOAT(temp2, addr2);
+    }
     if (ctx->EQUAL())
-      code = code || instruction::FEQ(temp, addr1, addr2);
+      code = code || instruction::FEQ(temp, temp1, temp2);
     else if (ctx->NOTEQUAL()){
-      code = code || instruction::FEQ(temp, addr1, addr2);
+      code = code || instruction::FEQ(temp, temp1, temp2);
       code = code || instruction::NOT(temp, temp);
     }
     else if(ctx->GT())
-      code = code || instruction::FLT(temp, addr2, addr1);
+      code = code || instruction::FLT(temp, temp2, temp1);
     else if (ctx->GE())
-      code = code || instruction::FLE(temp, addr2, addr1);
+      code = code || instruction::FLE(temp, temp2, temp1);
     else if(ctx->LT())
-      code = code || instruction::FLT(temp, addr1, addr2);
+      code = code || instruction::FLT(temp, temp1, temp2);
     else if (ctx->LE())
-      code = code || instruction::FLE(temp, addr1, addr2);
+      code = code || instruction::FLE(temp, temp1, temp2);
   }
   else{
     if (ctx->EQUAL())
@@ -327,11 +344,104 @@ antlrcpp::Any CodeGenVisitor::visitRelational(AslParser::RelationalContext *ctx)
   return codAts;
 }
 
+antlrcpp::Any CodeGenVisitor::visitAnd(AslParser::AndContext *ctx){
+  DEBUG_ENTER();
+  CodeAttribs     && codAt1 = visit(ctx->expr(0));
+  std::string         addr1 = codAt1.addr;
+  instructionList &   code1 = codAt1.code;
+  CodeAttribs     && codAt2 = visit(ctx->expr(1));
+  std::string         addr2 = codAt2.addr;
+  instructionList &   code2 = codAt2.code;
+  instructionList &&   code = code1 || code2;
+  std::string temp = "%"+codeCounters.newTEMP();
+  code = code || instruction::AND(temp, addr1, addr2);
+  CodeAttribs codAts(temp, "", code);
+  DEBUG_EXIT();
+  return codAts;
+}
+
+antlrcpp::Any CodeGenVisitor::visitOr(AslParser::OrContext *ctx){
+  DEBUG_ENTER();
+  CodeAttribs     && codAt1 = visit(ctx->expr(0));
+  std::string         addr1 = codAt1.addr;
+  instructionList &   code1 = codAt1.code;
+  CodeAttribs     && codAt2 = visit(ctx->expr(1));
+  std::string         addr2 = codAt2.addr;
+  instructionList &   code2 = codAt2.code;
+  instructionList &&   code = code1 || code2;
+  std::string temp = "%"+codeCounters.newTEMP();
+  code = code || instruction::OR(temp, addr1, addr2);
+  CodeAttribs codAts(temp, "", code);
+  DEBUG_EXIT();
+  return codAts;
+}
+
+antlrcpp::Any CodeGenVisitor::visitWhileStmt(AslParser::WhileStmtContext *ctx){
+  DEBUG_ENTER();
+  CodeAttribs     && codAt1 = visit(ctx->expr());
+  std::string         addr1 = codAt1.addr;
+  instructionList &   code1 = codAt1.code;
+  instructionList && code2 = visit(ctx->statements());
+  std::string label = codeCounters.newLabelWHILE();
+  std::string labelBegin = "while"+label;
+  std::string labelEnd = "endwhile"+label;
+
+  instructionList code = instruction::LABEL(labelBegin) || code1 || instruction::FJUMP(addr1, labelEnd) ||
+                  code2 || instruction::UJUMP(labelBegin) || instruction::LABEL(labelEnd);
+  DEBUG_EXIT();
+  return code;
+}
+
+antlrcpp::Any CodeGenVisitor::visitUnary(AslParser::UnaryContext *ctx){
+  DEBUG_ENTER();
+  CodeAttribs     && codAt1 = visit(ctx->expr());
+  std::string         addr1 = codAt1.addr;
+  instructionList &   code1 = codAt1.code;
+  instructionList &   code = code1;
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->expr());
+  std::string temp = "%"+codeCounters.newTEMP();
+  if(ctx->NOT()){
+    code = code || instruction::NOT(temp, addr1);
+  }
+  else if(ctx->MINUS()){
+    if(Types.isFloatTy(t1)){
+      code = code || instruction::FNEG(temp, addr1);
+    }
+    else if(Types.isIntegerTy(t1)){
+      code = code || instruction::NEG(temp, addr1);
+    }
+  }
+  else if(ctx->PLUS()){
+    temp = addr1;
+    code = code1;
+  }
+
+  CodeAttribs codAts(temp, "", code);
+  DEBUG_EXIT();
+  return codAts;
+}
+
 antlrcpp::Any CodeGenVisitor::visitValue(AslParser::ValueContext *ctx) {
   DEBUG_ENTER();
   instructionList code;
   std::string temp = "%"+codeCounters.newTEMP();
-  code = instruction::ILOAD(temp, ctx->getText());
+  if(ctx->INTVAL()){
+    code = instruction::ILOAD(temp, ctx->getText());
+  }
+  else if(ctx->FLOATVAL()){
+    code = instruction::FLOAD(temp, ctx->getText());
+  }
+  else if(ctx->CHARVAL()){
+    code = instruction::CHLOAD(temp, ctx->getText());
+  }
+  else if(ctx->BOOLVAL()){
+    if(ctx->getText() == "true"){
+      code = instruction::ILOAD(temp, "1");
+    }
+    else{
+      code = instruction::ILOAD(temp, "0");
+    }
+  }
   CodeAttribs codAts(temp, "", code);
   DEBUG_EXIT();
   return codAts;
@@ -351,6 +461,12 @@ antlrcpp::Any CodeGenVisitor::visitIdent(AslParser::IdentContext *ctx) {
   return codAts;
 }
 
+antlrcpp::Any CodeGenVisitor::visitParenthesis(AslParser::ParenthesisContext *ctx){
+  DEBUG_ENTER();
+  CodeAttribs && codAts = visit(ctx->expr());
+  DEBUG_EXIT();
+  return codAts;
+}
 
 // Getters for the necessary tree node atributes:
 //   Scope and Type
