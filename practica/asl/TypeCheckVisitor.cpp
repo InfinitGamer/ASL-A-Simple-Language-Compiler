@@ -504,7 +504,7 @@ antlrcpp::Any TypeCheckVisitor::visitAnd(AslParser::AndContext *ctx){
   TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(1));
 
   //si no es una expresion booleana entonces diremos que es error y lo marcaremos como toca
-  if((not Types.isErrorTy(t0) && not Types.isBooleanTy(t0)) || (not Types.isErrorTy(t0) && not Types.isBooleanTy(t0))){
+  if((not Types.isErrorTy(t0) && not Types.isBooleanTy(t0)) || (not Types.isErrorTy(t1) && not Types.isBooleanTy(t1))){
     Errors.incompatibleOperator(ctx->op);
   }
   putTypeDecor(ctx, Types.createBooleanTy());
@@ -520,7 +520,7 @@ antlrcpp::Any TypeCheckVisitor::visitOr(AslParser::OrContext *ctx){
   TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(1));
 
   //si no es una expresion booleana entonces diremos que es error y lo marcaremos como toca
-  if((not Types.isErrorTy(t0) && not Types.isBooleanTy(t0)) || (not Types.isErrorTy(t0) && not Types.isBooleanTy(t0))){
+  if((not Types.isErrorTy(t0) && not Types.isBooleanTy(t0)) || (not Types.isErrorTy(t1) && not Types.isBooleanTy(t1))){
     Errors.incompatibleOperator(ctx->op);
   }
   putTypeDecor(ctx, Types.createBooleanTy());
