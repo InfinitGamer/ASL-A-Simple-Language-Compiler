@@ -39,7 +39,7 @@
 #include <cstddef>    // std::size_t
 
 // uncomment the following line to enable debugging messages with DEBUG*
-// #define DEBUG_BUILD
+//#define DEBUG_BUILD
 #include "../common/debug.h"
 
 // using namespace std;
@@ -79,12 +79,75 @@ antlrcpp::Any CodeGenVisitor::visitProgram(AslParser::ProgramContext *ctx) {
   return my_code;
 }
 
+antlrcpp::Any CodeGenVisitor::visitMethodCall(AslParser::MethodCallContext *ctx){
+  DEBUG_ENTER();
+  instructionList code;
+  for(int i = 0; i < ctx->expr().size(); i++){  
+    CodeAttribs     && codAtsE1 = visit(ctx->expr(i));
+    std::string           addr1 = codAtsE1.addr;
+    // std::string           offs1 = codAtsE1.offs;
+    instructionList &     code1 = codAtsE1.code;
+    code = code || code1 || instruction::PUSH(addr1);
+  }
+  std::string functionName = ctx->ID()->getText();
+  code = code || instruction::CALL(functionName);
+  for (int i = 0; i < ctx->expr().size(); i++){
+    code = code || instruction::POP();
+  }
+  DEBUG_EXIT();
+  return code;
+}
+
+antlrcpp::Any CodeGenVisitor::visitFunctionCall(AslParser::FunctionCallContext *ctx){
+  DEBUG_ENTER();
+  instructionList code;
+  code = instruction::PUSH();
+  for(int i = 0; i < ctx->expr().size(); i++){  
+    CodeAttribs     && codAtsE1 = visit(ctx->expr(i));
+    std::string           addr1 = codAtsE1.addr;
+    // std::string           offs1 = codAtsE1.offs;
+    instructionList &     code1 = codAtsE1.code;
+    code = code || code1 || instruction::PUSH(addr1);
+  }
+  std::string functionName = ctx->ID()->getText();
+  code = code || instruction::CALL(functionName);
+  for (int i = 0; i < ctx->expr().size(); i++){
+    code = code || instruction::POP();
+  }
+  std::string temp = "%"+codeCounters.newTEMP();
+  code = code || instruction::POP(temp);
+  DEBUG_EXIT();
+  return CodeAttribs(temp, "", code);
+}
+
 antlrcpp::Any CodeGenVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   DEBUG_ENTER();
   SymTable::ScopeId sc = getScopeDecor(ctx);
   Symbols.pushThisScope(sc);
   subroutine subr(ctx->ID()->getText());
   codeCounters.reset();
+  if(ctx->basic_type){
+    std::string name = "_result";
+    TypesMgr::TypeId tResult = getTypeDecor(ctx->basic_type);
+    std::string type = Types.to_string(tResult);
+    if(Types.isArrayTy(tResult)){
+      subr.add_param(name, type, true);
+    }
+    else{
+      subr.add_param(name, type, false);
+    }
+  }
+  for (int i = 0; i < ctx->param().size(); i++){
+    std::string name = ctx->param(i)->ID()->getText();
+    TypesMgr::TypeId tParam = getTypeDecor(ctx->param(i)->type());
+    std::string type = Types.to_string(tParam);
+    if(Types.isArrayTy(tParam)){
+      subr.add_param(name, type, true);
+    }
+    else{
+      subr.add_param(name, type, false);
+    }
+  }
   std::vector<var> && lvars = visit(ctx->declarations());
   for (auto & onevar : lvars) {
     subr.add_var(onevar);
@@ -95,6 +158,21 @@ antlrcpp::Any CodeGenVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   Symbols.popScope();
   DEBUG_EXIT();
   return subr;
+}
+
+antlrcpp::Any CodeGenVisitor::visitReturn(AslParser::ReturnContext *ctx){
+  DEBUG_ENTER();
+  instructionList code;
+  if(ctx->expr()){
+    CodeAttribs     && codAtsE1 = visit(ctx->expr());
+    std::string           addr1 = codAtsE1.addr;
+    // std::string           offs1 = codAtsE1.offs;
+    instructionList &     code1 = codAtsE1.code;
+    code = code1 || instruction::LOAD("_result", addr1);
+  }
+  code = code || instruction::RETURN();
+  DEBUG_EXIT();
+  return code;
 }
 
 antlrcpp::Any CodeGenVisitor::visitDeclarations(AslParser::DeclarationsContext *ctx) {
@@ -138,15 +216,43 @@ antlrcpp::Any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx)
   instructionList code;
   CodeAttribs     && codAtsE1 = visit(ctx->left_expr());
   std::string           addr1 = codAtsE1.addr;
-  // std::string           offs1 = codAtsE1.offs;
+  std::string           offs1 = codAtsE1.offs;
   instructionList &     code1 = codAtsE1.code;
-  // TypesMgr::TypeId tid1 = getTypeDecor(ctx->left_expr());
+  TypesMgr::TypeId tid1 = getTypeDecor(ctx->left_expr());
   CodeAttribs     && codAtsE2 = visit(ctx->expr());
   std::string           addr2 = codAtsE2.addr;
   // std::string           offs2 = codAtsE2.offs;
   instructionList &     code2 = codAtsE2.code;
   // TypesMgr::TypeId tid2 = getTypeDecor(ctx->expr());
-  code = code1 || code2 || instruction::LOAD(addr1, addr2);
+  if(Types.isArrayTy(tid1)){
+    code = code1 || code2 || instruction::XLOAD(addr1, offs1, addr2);
+  }
+  else{
+    code = code1 || code2 || instruction::LOAD(addr1, addr2);
+  }
+  DEBUG_EXIT();
+  return code;
+}
+
+antlrcpp::Any CodeGenVisitor::visitArrayIndex(AslParser::ArrayIndexContext *ctx){
+  DEBUG_ENTER();
+  instructionList code;
+  CodeAttribs     && codAtsE1 = visit(ctx->left_expr());
+  std::string           addr1 = codAtsE1.addr;
+  // std::string           offs1 = codAtsE1.offs;
+  instructionList &     code1 = codAtsE1.code;
+  TypesMgr::TypeId tid1 = getTypeDecor(ctx->left_expr());
+  CodeAttribs     && codAtsE2 = visit(ctx->expr());
+  std::string           addr2 = codAtsE2.addr;
+  // std::string           offs2 = codAtsE2.offs;
+  instructionList &     code2 = codAtsE2.code;
+  // TypesMgr::TypeId tid2 = getTypeDecor(ctx->expr());
+  if(Types.isArrayTy(tid1)){
+    code = code1 || code2 || instruction::XLOAD(addr1, offs1, addr2);
+  }
+  else{
+    code = code1 || code2 || instruction::LOAD(addr1, addr2);
+  }
   DEBUG_EXIT();
   return code;
 }
@@ -159,9 +265,18 @@ antlrcpp::Any CodeGenVisitor::visitIfStmt(AslParser::IfStmtContext *ctx) {
   instructionList &    code1 = codAtsE.code;
   instructionList &&   code2 = visit(ctx->statements(0));
   std::string label = codeCounters.newLabelIF();
+  std::string labelElse = "else"+label;
   std::string labelEndIf = "endif"+label;
-  code = code1 || instruction::FJUMP(addr1, labelEndIf) ||
-         code2 || instruction::LABEL(labelEndIf);
+  if(ctx->ELSE()){
+    instructionList &&   code3 = visit(ctx->statements(1));
+    code = code1 || instruction::FJUMP(addr1, labelElse) ||
+           code2 || instruction::UJUMP(labelEndIf) || instruction::LABEL(labelElse) ||
+           code3 || instruction::LABEL(labelEndIf);
+  }
+  else{
+    code = code1 || instruction::FJUMP(addr1, labelEndIf) ||
+          code2 || instruction::LABEL(labelEndIf);
+  }
   DEBUG_EXIT();
   return code;
 }

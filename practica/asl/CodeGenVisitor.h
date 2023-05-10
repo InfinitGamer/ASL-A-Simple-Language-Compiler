@@ -86,6 +86,12 @@ public:
   antlrcpp::Any visitAnd(AslParser::AndContext *ctx);
   antlrcpp::Any visitOr(AslParser::OrContext *ctx);
   antlrcpp::Any visitUnary(AslParser::UnaryContext *ctx);
+  antlrcpp::Any visitReturn(AslParser::ReturnContext *ctx);
+  antlrcpp::Any visitFunctionCall(AslParser::FunctionCallContext *ctx);
+  antlrcpp::Any visitMethodCall(AslParser::MethodCallContext *ctx);
+  antlrcpp::Any visitArrayIndex(AslParser::ArrayIndexContext *ctx);
+
+
 
 private:
 
