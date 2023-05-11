@@ -168,7 +168,14 @@ antlrcpp::Any CodeGenVisitor::visitReturn(AslParser::ReturnContext *ctx){
     std::string           addr1 = codAtsE1.addr;
     // std::string           offs1 = codAtsE1.offs;
     instructionList &     code1 = codAtsE1.code;
-    code = code1 || instruction::LOAD("_result", addr1);
+    std::string temp = addr1;
+    TypesMgr::TypeId tret = getTypeDecor(ctx);
+    TypesMgr::TypeId tret2 = getTypeDecor(ctx->expr());
+    if(Types.isFloatTy(tret) and Types.isIntegerTy(tret2)){
+      temp = "%"+codeCounters.newTEMP();
+      code = code1 || instruction::FLOAT(temp,addr1);
+    }
+    code = code || instruction::LOAD("_result", temp);
   }
   code = code || instruction::RETURN();
   DEBUG_EXIT();
@@ -221,10 +228,10 @@ antlrcpp::Any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx)
   TypesMgr::TypeId tid1 = getTypeDecor(ctx->left_expr());
   CodeAttribs     && codAtsE2 = visit(ctx->expr());
   std::string           addr2 = codAtsE2.addr;
-  // std::string           offs2 = codAtsE2.offs;
+  std::string           offs2 = codAtsE2.offs;
   instructionList &     code2 = codAtsE2.code;
   // TypesMgr::TypeId tid2 = getTypeDecor(ctx->expr());
-  if(Types.isArrayTy(tid1)){
+  if(offs1 != ""){
     code = code1 || code2 || instruction::XLOAD(addr1, offs1, addr2);
   }
   else{
@@ -236,25 +243,34 @@ antlrcpp::Any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx)
 
 antlrcpp::Any CodeGenVisitor::visitArrayIndex(AslParser::ArrayIndexContext *ctx){
   DEBUG_ENTER();
-  instructionList code;
-  CodeAttribs     && codAtsE1 = visit(ctx->left_expr());
-  std::string           addr1 = codAtsE1.addr;
-  // std::string           offs1 = codAtsE1.offs;
-  instructionList &     code1 = codAtsE1.code;
-  TypesMgr::TypeId tid1 = getTypeDecor(ctx->left_expr());
-  CodeAttribs     && codAtsE2 = visit(ctx->expr());
-  std::string           addr2 = codAtsE2.addr;
-  // std::string           offs2 = codAtsE2.offs;
-  instructionList &     code2 = codAtsE2.code;
-  // TypesMgr::TypeId tid2 = getTypeDecor(ctx->expr());
-  if(Types.isArrayTy(tid1)){
-    code = code1 || code2 || instruction::XLOAD(addr1, offs1, addr2);
-  }
-  else{
-    code = code1 || code2 || instruction::LOAD(addr1, addr2);
-  }
+    CodeAttribs codAts = visit(ctx->left_expr());
+    std::string         addr1 = codAts.addr;
+    instructionList  &  code1 = codAts.code;
+    std::string     &    offset1 = codAts.offs;
+    CodeAttribs codAts1 = visit(ctx->expr());
+    std::string         addr2 = codAts1.addr;
+    instructionList     code2 = codAts1.code;
+    
+    int size = getSize(getTypeDecor(ctx));
+    std::string temp1 =  '%' + codeCounters.newTEMP(); 
+    code1 = code1 || code2 || instruction::ILOAD(temp1, std::to_string(size));
+    std::string temp2 =  '%' + codeCounters.newTEMP();
+    code1 = code1 || instruction::MUL(temp2, addr2, temp1);
+    if(offset1 == ""){
+      offset1 = temp2;
+    }
+    else{
+      std::string temp3 =  '%' + codeCounters.newTEMP();
+      code1 = code1 || instruction::ADD(temp3, temp2, offset1);
+      offset1 = temp3;
+    }
+
+    std::string temp4 =  '%' + codeCounters.newTEMP();
+    code1 = code1 || instruction::LOADX(temp4, addr1, offset1);
+    codAts.addr = temp4;
+    codAts.offs = "";
   DEBUG_EXIT();
-  return code;
+  return codAts;
 }
 
 antlrcpp::Any CodeGenVisitor::visitIfStmt(AslParser::IfStmtContext *ctx) {
@@ -339,7 +355,39 @@ antlrcpp::Any CodeGenVisitor::visitWriteString(AslParser::WriteStringContext *ct
 
 antlrcpp::Any CodeGenVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx) {
   DEBUG_ENTER();
-  CodeAttribs && codAts = visit(ctx->ident());
+   CodeAttribs codAts("","",instructionList());
+  if(ctx->PAREOP()){
+    codAts = visit(ctx->left_expr());
+  }
+  else if(ctx->expr()){
+    codAts = visit(ctx->left_expr());
+    std::string         addr1 = codAts.addr;
+    instructionList  &  code1 = codAts.code;
+    std::string     &    offset1 = codAts.offs;
+    CodeAttribs codAts1 = visit(ctx->expr());
+    std::string         addr2 = codAts1.addr;
+    instructionList     code2 = codAts1.code;
+    
+    int size = getSize(getTypeDecor(ctx));
+    std::string temp1 =  '%' + codeCounters.newTEMP(); 
+    code1 = code1 || code2 || instruction::ILOAD(temp1, std::to_string(size));
+    std::string temp2 =  '%' + codeCounters.newTEMP();
+    code1 = code1 || instruction::MUL(temp2, addr2, temp1);
+    if(offset1 == ""){
+      offset1 = temp2;
+    }
+    else{
+      std::string temp3 =  '%' + codeCounters.newTEMP();
+      code1 = code1 || instruction::ADD(temp3, temp2, offset1);
+      offset1 = temp3;
+    }
+
+
+  }
+  else{
+    codAts = visit(ctx->ident());
+  }
+ 
   DEBUG_EXIT();
   return codAts;
 }
@@ -582,7 +630,16 @@ antlrcpp::Any CodeGenVisitor::visitParenthesis(AslParser::ParenthesisContext *ct
   DEBUG_EXIT();
   return codAts;
 }
-
+int CodeGenVisitor::getSize(TypesMgr::TypeId t){
+  if(Types.isPrimitiveTy(t)) return 1;
+  else{
+    if(Types.isArrayTy(t)){
+      int i = Types.getArraySize(t);
+      TypesMgr::TypeId t_child = Types.getArrayElemType(t);
+      return i * getSize(t_child);
+    }
+  }
+}
 // Getters for the necessary tree node atributes:
 //   Scope and Type
 SymTable::ScopeId CodeGenVisitor::getScopeDecor(antlr4::ParserRuleContext *ctx) const {

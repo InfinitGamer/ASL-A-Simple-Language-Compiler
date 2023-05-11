@@ -187,7 +187,7 @@ antlrcpp::Any TypeCheckVisitor::visitReturn(AslParser::ReturnContext *ctx){
   if(not Types.copyableTypes(getCurrentFunctionTy(), tRet)){
     Errors.incompatibleReturn(ctx->RETURN());
   }
-  putTypeDecor(ctx, tRet);
+  putTypeDecor(ctx, getCurrentFunctionTy());
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
   return 0;

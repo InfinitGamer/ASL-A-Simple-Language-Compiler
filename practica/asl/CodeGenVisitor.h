@@ -90,7 +90,7 @@ public:
   antlrcpp::Any visitFunctionCall(AslParser::FunctionCallContext *ctx);
   antlrcpp::Any visitMethodCall(AslParser::MethodCallContext *ctx);
   antlrcpp::Any visitArrayIndex(AslParser::ArrayIndexContext *ctx);
-
+  int getSize(TypesMgr::TypeId t);
 
 
 private:
