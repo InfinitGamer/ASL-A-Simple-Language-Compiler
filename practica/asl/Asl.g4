@@ -38,7 +38,7 @@ program : function+ EOF
 
 // A function has a name, a list of parameters and a list of statements
 function
-        : FUNC ID PAREOP (param (',' param)*)? PARECL (':' basic_type=type)? declarations statements ENDFUNC
+        : FUNC ID PAREOP (param (',' param)*)? PARECL (':' basic_type=basic)? declarations statements ENDFUNC
         ;
 
 declarations
@@ -52,10 +52,10 @@ param
         : ID ':' type
         ;
 
-type    : BASIC_TYPE           # basicType
-        | 'array' CLAUOP INTVAL CLAUCL 'of' BASIC_TYPE # arrayType 
+type    : basic           # basicType
+        | 'array' CLAUOP INTVAL CLAUCL 'of' basic # arrayType 
         ;
-
+basic: BASIC_TYPE;
 statements
         : (statement)*
         ;
