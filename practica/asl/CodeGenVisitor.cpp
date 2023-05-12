@@ -162,23 +162,13 @@ antlrcpp::Any CodeGenVisitor::visitFunction(AslParser::FunctionContext *ctx) {
     std::string name = "_result";
     TypesMgr::TypeId tResult = getTypeDecor(ctx->basic_type);
     std::string type = Types.to_string(tResult);
-    if(Types.isArrayTy(tResult)){
-      subr.add_param(name, type, true);
-    }
-    else{
-      subr.add_param(name, type, false);
-    }
+    subr.add_param(name, type, Types.isArrayTy(tResult));
   }
   for (int i = 0; i < (int)ctx->param().size(); i++){
     std::string name = ctx->param(i)->ID()->getText();
     TypesMgr::TypeId tParam = getTypeDecor(ctx->param(i)->type());
     std::string type = Types.to_string(tParam);
-    if(Types.isArrayTy(tParam)){
-      subr.add_param(name, type, true);
-    }
-    else{
-      subr.add_param(name, type, false);
-    }
+    subr.add_param(name, type, Types.isArrayTy(tParam));
   }
   std::vector<var> && lvars = visit(ctx->declarations());
   for (auto & onevar : lvars) {
