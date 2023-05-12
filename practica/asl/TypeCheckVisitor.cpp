@@ -128,7 +128,7 @@ antlrcpp::Any TypeCheckVisitor::visitFunctionCall(AslParser::FunctionCallContext
       Errors.numberOfParameters(ctx);
     }
     else{
-      for(int i = 0; i < lParamsTy.size(); i++){
+      for(int i = 0; i < (int)lParamsTy.size(); i++){
         if(!Types.isErrorTy(getTypeDecor(ctx->expr(i))) && !Types.copyableTypes(lParamsTy[i], getTypeDecor(ctx->expr(i)))){
           Errors.incompatibleParameter(ctx->expr(i), i+1, ctx);
         }
@@ -163,7 +163,7 @@ antlrcpp::Any TypeCheckVisitor::visitMethodCall(AslParser::MethodCallContext *ct
       Errors.numberOfParameters(ctx);
     }
     else{
-      for(int i = 0; i < lParamsTy.size(); i++){
+      for(int i = 0; i < (int)lParamsTy.size(); i++){
         if(!Types.isErrorTy(getTypeDecor(ctx->expr(i))) && !Types.copyableTypes(lParamsTy[i], getTypeDecor(ctx->expr(i)))){
           Errors.incompatibleParameter(ctx->expr(i), i+1, ctx);
         }
@@ -285,19 +285,6 @@ antlrcpp::Any TypeCheckVisitor::visitWhileStmt(AslParser::WhileStmtContext *ctx)
   return 0;
 }
 
-
-antlrcpp::Any TypeCheckVisitor::visitProcCall(AslParser::ProcCallContext *ctx) {
-  DEBUG_ENTER();
-  visit(ctx->ident());
-  TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
-  if (Types.isErrorTy(t1)) {
-    ;
-  } else if (not Types.isFunctionTy(t1)) {
-    Errors.isNotCallable(ctx->ident());
-  }
-  DEBUG_EXIT();
-  return 0;
-}
 
 antlrcpp::Any TypeCheckVisitor::visitReadStmt(AslParser::ReadStmtContext *ctx) {
   DEBUG_ENTER();
