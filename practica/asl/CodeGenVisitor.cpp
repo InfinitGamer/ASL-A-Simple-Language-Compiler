@@ -98,7 +98,7 @@ antlrcpp::Any CodeGenVisitor::visitMethodCall(AslParser::MethodCallContext *ctx)
       temp = '%'+codeCounters.newTEMP();
       code = code||instruction::FLOAT(temp,addr1);
     }
-    else if(Types.isArrayTy(tfunc)){
+    else if(Types.isArrayTy(tfunc) and Symbols.isLocalVarClass(addr1)){
       temp = '%'+codeCounters.newTEMP();
       code = code||instruction::ALOAD(temp,addr1);
     }
@@ -133,7 +133,9 @@ antlrcpp::Any CodeGenVisitor::visitFunctionCall(AslParser::FunctionCallContext *
       temp = '%'+codeCounters.newTEMP();
       code = code||instruction::FLOAT(temp,addr1);
     }
-    else if(Types.isArrayTy(tfunc)){
+    //cuando sea una array y sea una variable creada dentro del scope
+    //entonces hay que hacer pasar referencia.
+    else if(Types.isArrayTy(tfunc) and Symbols.isLocalVarClass(addr1)){
       temp = '%'+codeCounters.newTEMP();
       code = code||instruction::ALOAD(temp,addr1);
     }
@@ -230,13 +232,9 @@ antlrcpp::Any CodeGenVisitor::visitVariable_decl(AslParser::Variable_declContext
   DEBUG_ENTER();
   TypesMgr::TypeId   t1 = getTypeDecor(ctx->type());
   std::size_t      size = Types.getSizeOfType(t1);
-  if(Types.isArrayTy(t1)){
-    t1 = Types.getArrayElemType(t1);
-  }
-  
   std::vector<var> lvars;
   for(auto& varID : ctx->ID()){
-    lvars.push_back(var{varID->getText(), Types.to_string(t1), size});
+    lvars.push_back(var{varID->getText(), Types.to_string_basic(t1), size});
   }
   DEBUG_EXIT();
   return lvars;
