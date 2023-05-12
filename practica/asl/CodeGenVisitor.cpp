@@ -84,6 +84,7 @@ antlrcpp::Any CodeGenVisitor::visitMethodCall(AslParser::MethodCallContext *ctx)
   TypesMgr::TypeId t = Symbols.getGlobalFunctionType(ctx->ID()->getText());
   auto typesParams = Types.getFuncParamsTypes(t);
   instructionList code;
+  code = instruction::PUSH();
   for(int i = 0; i < (int)ctx->expr().size(); i++){  
     CodeAttribs     && codAtsE1 = visit(ctx->expr(i));
     std::string           addr1 = codAtsE1.addr;
@@ -108,6 +109,7 @@ antlrcpp::Any CodeGenVisitor::visitMethodCall(AslParser::MethodCallContext *ctx)
   for (int i = 0; i < (int)ctx->expr().size(); i++){
     code = code || instruction::POP();
   }
+  code = code || instruction::POP();
   DEBUG_EXIT();
   return code;
 }
@@ -265,16 +267,16 @@ antlrcpp::Any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx)
   instructionList &     code2 = codAtsE2.code;
   TypesMgr::TypeId tid2 = getTypeDecor(ctx->expr());
   std::string temp = addr2;
-  code = code1;
+  code = code1 || code2;
   if(Types.isFloatTy(tid1) and Types.isIntegerTy(tid2)){
     temp = '%'+codeCounters.newTEMP();
     code = code || instruction::FLOAT(temp, addr2);
   }
   if(offs1 != ""){
-    code = code || code2 || instruction::XLOAD(addr1, offs1, addr2);
+    code = code || instruction::XLOAD(addr1, offs1, temp);
   }
   else{
-    code = code || code2 || instruction::LOAD(addr1, addr2);
+    code = code || instruction::LOAD(addr1, temp);
   }
   DEBUG_EXIT();
   return code;
@@ -341,11 +343,17 @@ antlrcpp::Any CodeGenVisitor::visitReadStmt(AslParser::ReadStmtContext *ctx) {
   DEBUG_ENTER();
   CodeAttribs     && codAtsE = visit(ctx->left_expr());
   std::string          addr1 = codAtsE.addr;
-  // std::string          offs1 = codAtsE.offs;
+  std::string          offs1 = codAtsE.offs;
   instructionList &    code1 = codAtsE.code;
   instructionList &     code = code1;
-  // TypesMgr::TypeId tid1 = getTypeDecor(ctx->left_expr());
-  code = code1 || instruction::READI(addr1);
+  std::string temp = addr1;
+  if(offs1 != "") temp = '%'+codeCounters.newTEMP();
+
+  TypesMgr::TypeId tid1 = getTypeDecor(ctx->left_expr());
+  if(Types.isFloatTy(tid1)) code = code || instruction::READF(temp);
+  else if(Types.isCharacterTy(tid1)) code = code || instruction::READC(temp);
+  else code = code || instruction::READI(temp);
+  if(offs1 != "") code = code || instruction::XLOAD(addr1,offs1,temp);
   DEBUG_EXIT();
   return code;
 }
