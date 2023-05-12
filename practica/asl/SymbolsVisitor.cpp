@@ -150,7 +150,7 @@ antlrcpp::Any SymbolsVisitor::visitParam(AslParser::ParamContext *ctx)
   }
   else
   {
-    Symbols.addLocalVar(ident, t1);
+    Symbols.addParameter(ident, t1);
   }
 
   DEBUG_EXIT();

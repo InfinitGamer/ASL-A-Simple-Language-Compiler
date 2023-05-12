@@ -167,7 +167,7 @@ antlrcpp::Any CodeGenVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   for (int i = 0; i < (int)ctx->param().size(); i++){
     std::string name = ctx->param(i)->ID()->getText();
     TypesMgr::TypeId tParam = getTypeDecor(ctx->param(i)->type());
-    std::string type = Types.to_string(tParam);
+    std::string type = Types.to_string_basic(tParam);
     subr.add_param(name, type, Types.isArrayTy(tParam));
   }
   std::vector<var> && lvars = visit(ctx->declarations());
