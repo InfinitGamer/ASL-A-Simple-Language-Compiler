@@ -350,7 +350,14 @@ antlrcpp::Any CodeGenVisitor::visitReadStmt(AslParser::ReadStmtContext *ctx) {
   if(Types.isFloatTy(tid1)) code = code || instruction::READF(temp);
   else if(Types.isCharacterTy(tid1)) code = code || instruction::READC(temp);
   else code = code || instruction::READI(temp);
-  if(offs1 != "") code = code || instruction::XLOAD(addr1,offs1,temp);
+  if(offs1 != ""){
+    std::string temp2 = addr1;
+    if(Symbols.isParameterClass(temp2)){
+      temp2 = '%'+codeCounters.newTEMP();
+      code = code || instruction::LOAD(temp2,addr1);
+    }
+    code = code || instruction::XLOAD(temp2,offs1,temp);
+  } 
   DEBUG_EXIT();
   return code;
 }
