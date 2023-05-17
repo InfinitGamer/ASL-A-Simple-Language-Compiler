@@ -256,20 +256,54 @@ antlrcpp::Any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx)
   TypesMgr::TypeId tid2 = getTypeDecor(ctx->expr());
   std::string temp = addr2;
   code = code1 || code2;
-  if(Types.isFloatTy(tid1) and Types.isIntegerTy(tid2)){
-    temp = '%'+codeCounters.newTEMP();
-    code = code || instruction::FLOAT(temp, addr2);
-  }
-  if(offs1 != ""){
-    std::string temp2 = addr1;
-    if(Symbols.isParameterClass(temp2)){
-      temp2 = '%'+codeCounters.newTEMP();
-      code = code || instruction::LOAD(temp2,addr1);
+  if(Types.isArrayTy(tid1) && Types.isArrayTy(tid2)){
+    std::string temp1 = addr1;
+    std::string temp2 = addr2;
+    if(Symbols.isParameterClass(temp1)){
+        temp1 = '%'+codeCounters.newTEMP();
+        code = code || instruction::LOAD(temp1, addr1);
     }
-    code = code || instruction::XLOAD(temp2, offs1, temp);
+    if(Symbols.isParameterClass(temp2)){
+        temp2 = '%'+codeCounters.newTEMP();
+        code = code || instruction::LOAD(temp2, addr1);
+    }
+    std::string temp3 = '%'+codeCounters.newTEMP();
+    std::string temp4 = '%'+codeCounters.newTEMP();
+    std::string temp5 = '%'+codeCounters.newTEMP();
+    std::string temp6 = '%'+codeCounters.newTEMP();
+    std::string temp7 = '%'+codeCounters.newTEMP();
+    std::string label = codeCounters.newLabelWHILE();
+    std::string labelBegin = "while"+label;
+    std::string labelEnd = "endwhile"+label;
+    code = code || instruction::ILOAD(temp3, "0");
+    code = code || instruction::ILOAD(temp7, "1");
+    int sizeArray = getSize(tid1);
+    code = code || instruction::ILOAD(temp4, std::to_string(sizeArray));
+    code = code || instruction::LABEL(labelBegin);
+    code = code || instruction::LT(temp5, temp3, temp4);
+    code = code || instruction::FJUMP(temp5, labelEnd);
+    code = code || instruction::LOADX(temp6,temp2,temp3);
+    code = code || instruction::XLOAD(temp1,temp3,temp6);
+    code = code || instruction::ADD(temp3,temp3,temp7);
+    code = code || instruction::UJUMP(labelBegin);
+    code = code || instruction::LABEL(labelEnd);
   }
   else{
-    code = code || instruction::LOAD(addr1, temp);
+    if(Types.isFloatTy(tid1) and Types.isIntegerTy(tid2)){
+      temp = '%'+codeCounters.newTEMP();
+      code = code || instruction::FLOAT(temp, addr2);
+    }
+    if(offs1 != ""){
+      std::string temp2 = addr1;
+      if(Symbols.isParameterClass(temp2)){
+        temp2 = '%'+codeCounters.newTEMP();
+        code = code || instruction::LOAD(temp2,addr1);
+      }
+      code = code || instruction::XLOAD(temp2, offs1, temp);
+    }
+    else{
+      code = code || instruction::LOAD(addr1, temp);
+    }
   }
   DEBUG_EXIT();
   return code;
@@ -637,7 +671,9 @@ antlrcpp::Any CodeGenVisitor::visitValue(AslParser::ValueContext *ctx) {
     code = instruction::FLOAD(temp, ctx->getText());
   }
   else if(ctx->CHARVAL()){
-    code = instruction::CHLOAD(temp, ctx->getText());
+    std::string auxStr = ctx->CHARVAL()->getText();
+    auxStr = auxStr.substr(1, auxStr.length()-2);
+    code = instruction::CHLOAD(temp, auxStr);
   }
   else if(ctx->BOOLVAL()){
     if(ctx->getText() == "true"){
