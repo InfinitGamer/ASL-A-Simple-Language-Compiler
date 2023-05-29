@@ -267,48 +267,41 @@ antlrcpp::Any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx)
         temp2 = '%'+codeCounters.newTEMP();
         code = code || instruction::LOAD(temp2, addr1);
     }
-    if(offs1 != ""){
-    	std::string v = '%'+codeCounters.newTEMP();
-    	if(Symbols.isParameterClass(addr1)){
-    	code = code || instruction::ADD(v,temp1, offs1);
-    	}
-    	else{
-    	std::string v2 = '%'+codeCounters.newTEMP();
-    	code = code || instruction::ALOAD(v2, addr1) || instruction::ADD(v,v2,offs1);
-   
-    	}
-    	temp1 = v;
-    }
-    if(offs2 != ""){
-    	std::string v = '%'+codeCounters.newTEMP();
-    	if(Symbols.isParameterClass(addr2)){
-    	code = code || instruction::ADD(v,temp2, offs2);
-    	}
-    	else{
-    	std::string v2 = '%'+codeCounters.newTEMP();
-    	code = code || instruction::ALOAD(v2, addr2) || instruction::ADD(v,v2,offs2);
-   
-    	}
-    	temp2 = v;
-    }
+    
     std::string temp3 = '%'+codeCounters.newTEMP();
     std::string temp4 = '%'+codeCounters.newTEMP();
     std::string temp5 = '%'+codeCounters.newTEMP();
     std::string temp6 = '%'+codeCounters.newTEMP();
     std::string temp7 = '%'+codeCounters.newTEMP();
+    std::string temp8 = '%'+codeCounters.newTEMP();
+    std::string temp9 = '%'+codeCounters.newTEMP();
     std::string label = codeCounters.newLabelWHILE();
     std::string labelBegin = "while"+label;
     std::string labelEnd = "endwhile"+label;
     code = code || instruction::ILOAD(temp3, "0");
     code = code || instruction::ILOAD(temp7, "1");
+    if(offs1 != ""){
+    	code = code || instruction::ADD(temp8, temp3, offs1);
+    }
+    else{
+    	code = code || instruction::LOAD(temp8, temp3);
+    }
+    if(offs2 != ""){
+    	code = code || instruction::ADD(temp9, temp3, offs2);
+    }
+    else{
+    	code = code || instruction::LOAD(temp9, temp3);
+    }
     int sizeArray = getSize(tid1);
     code = code || instruction::ILOAD(temp4, std::to_string(sizeArray));
     code = code || instruction::LABEL(labelBegin);
     code = code || instruction::LT(temp5, temp3, temp4);
     code = code || instruction::FJUMP(temp5, labelEnd);
-    code = code || instruction::LOADX(temp6,temp2,temp3);
-    code = code || instruction::XLOAD(temp1,temp3,temp6);
+    code = code || instruction::LOADX(temp6,temp2,temp8);
+    code = code || instruction::XLOAD(temp1,temp9,temp6);
     code = code || instruction::ADD(temp3,temp3,temp7);
+    code = code || instruction::ADD(temp8,temp8,temp7);
+    code = code || instruction::ADD(temp9,temp9,temp7);
     code = code || instruction::UJUMP(labelBegin);
     code = code || instruction::LABEL(labelEnd);
   }
