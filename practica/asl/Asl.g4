@@ -53,7 +53,7 @@ param
         ;
 
 type    : basic           # basicType
-        | 'array' CLAUOP INTVAL CLAUCL 'of' basic # arrayType 
+        | 'array' CLAUOP INTVAL CLAUCL 'of' t=basic # arrayType 
         ;
 basic: BASIC_TYPE;
 statements

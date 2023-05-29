@@ -167,7 +167,7 @@ antlrcpp::Any CodeGenVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   for (int i = 0; i < (int)ctx->param().size(); i++){
     std::string name = ctx->param(i)->ID()->getText();
     TypesMgr::TypeId tParam = getTypeDecor(ctx->param(i)->type());
-    std::string type = Types.to_string_basic(tParam);
+    std::string type = Types.to_string_basic(getBasicType(tParam));
     subr.add_param(name, type, Types.isArrayTy(tParam));
   }
   std::vector<var> && lvars = visit(ctx->declarations());
@@ -221,10 +221,10 @@ antlrcpp::Any CodeGenVisitor::visitDeclarations(AslParser::DeclarationsContext *
 antlrcpp::Any CodeGenVisitor::visitVariable_decl(AslParser::Variable_declContext *ctx) {
   DEBUG_ENTER();
   TypesMgr::TypeId   t1 = getTypeDecor(ctx->type());
-  std::size_t      size = Types.getSizeOfType(t1);
+  std::size_t      size = getSize(t1);
   std::vector<var> lvars;
   for(auto& varID : ctx->ID()){
-    lvars.push_back(var{varID->getText(), Types.to_string_basic(t1), size});
+    lvars.push_back(var{varID->getText(), Types.to_string_basic(getBasicType(t1)), size});
   }
   DEBUG_EXIT();
   return lvars;
@@ -297,8 +297,8 @@ antlrcpp::Any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx)
     code = code || instruction::LABEL(labelBegin);
     code = code || instruction::LT(temp5, temp3, temp4);
     code = code || instruction::FJUMP(temp5, labelEnd);
-    code = code || instruction::LOADX(temp6,temp2,temp8);
-    code = code || instruction::XLOAD(temp1,temp9,temp6);
+    code = code || instruction::LOADX(temp6,temp2,temp9);
+    code = code || instruction::XLOAD(temp1,temp8,temp6);
     code = code || instruction::ADD(temp3,temp3,temp7);
     code = code || instruction::ADD(temp8,temp8,temp7);
     code = code || instruction::ADD(temp9,temp9,temp7);
@@ -354,10 +354,17 @@ antlrcpp::Any CodeGenVisitor::visitArrayIndex(AslParser::ArrayIndexContext *ctx)
       temp5 = '%'+codeCounters.newTEMP();
       code1 = code1 || instruction::LOAD(temp5,addr1);
     }
-    std::string temp4 =  '%' + codeCounters.newTEMP();
-    code1 = code1 || instruction::LOADX(temp4, temp5, offset1);
-    codAts.addr = temp4;
-    codAts.offs = "";
+    if(Types.isPrimitiveTy(getTypeDecor(ctx))){
+    	std::string temp4 =  '%' + codeCounters.newTEMP();
+	code1 = code1 || instruction::LOADX(temp4, temp5, offset1);
+	codAts.addr = temp4;
+	codAts.offs = "";
+    }
+    else{
+    	codAts.addr = temp5;
+    	codAts.offs = offset1;
+    }
+    
   DEBUG_EXIT();
   return codAts;
 }
@@ -734,6 +741,13 @@ int CodeGenVisitor::getSize(TypesMgr::TypeId t){
       return i * getSize(t_child);
     }
   }
+}
+TypesMgr::TypeId CodeGenVisitor::getBasicType(TypesMgr::TypeId t){
+ if(Types.isPrimitiveTy(t)) return t;
+ else {
+  TypesMgr::TypeId t_child = Types.getArrayElemType(t);
+  return getBasicType(t_child);
+ }
 }
 // Getters for the necessary tree node atributes:
 //   Scope and Type

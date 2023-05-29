@@ -195,8 +195,8 @@ antlrcpp::Any SymbolsVisitor::visitArrayType(AslParser::ArrayTypeContext *ctx)
   DEBUG_ENTER();
   std::string tempStr = ctx->INTVAL()->getText();
   int size = stoi(tempStr);
-  visit(ctx->basic());
-  TypesMgr::TypeId t1 = getTypeDecor(ctx->basic());
+  visit(ctx->t);
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->t);
   TypesMgr::TypeId t = Types.createErrorTy();
   if (not Types.isErrorTy(t1))
   {
