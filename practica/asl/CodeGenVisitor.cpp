@@ -267,6 +267,30 @@ antlrcpp::Any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx)
         temp2 = '%'+codeCounters.newTEMP();
         code = code || instruction::LOAD(temp2, addr1);
     }
+    if(offs1 != ""){
+    	std::string v = '%'+codeCounters.newTEMP();
+    	if(Symbols.isParameterClass(addr1)){
+    	code = code || instruction::ADD(v,temp1, offs1);
+    	}
+    	else{
+    	std::string v2 = '%'+codeCounters.newTEMP();
+    	code = code || instruction::ALOAD(v2, addr1) || instruction::ADD(v,v2,offs1);
+   
+    	}
+    	temp1 = v;
+    }
+    if(offs2 != ""){
+    	std::string v = '%'+codeCounters.newTEMP();
+    	if(Symbols.isParameterClass(addr2)){
+    	code = code || instruction::ADD(v,temp2, offs2);
+    	}
+    	else{
+    	std::string v2 = '%'+codeCounters.newTEMP();
+    	code = code || instruction::ALOAD(v2, addr2) || instruction::ADD(v,v2,offs2);
+   
+    	}
+    	temp2 = v;
+    }
     std::string temp3 = '%'+codeCounters.newTEMP();
     std::string temp4 = '%'+codeCounters.newTEMP();
     std::string temp5 = '%'+codeCounters.newTEMP();
