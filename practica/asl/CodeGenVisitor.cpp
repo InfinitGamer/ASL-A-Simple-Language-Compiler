@@ -98,7 +98,7 @@ antlrcpp::Any CodeGenVisitor::visitMethodCall(AslParser::MethodCallContext *ctx)
       temp = '%'+codeCounters.newTEMP();
       code = code||instruction::FLOAT(temp,addr1);
     }
-    else if(Types.isArrayTy(tfunc) and Symbols.isLocalVarClass(addr1)){
+    else if(not Types.isPrimitiveTy(tfunc) and Symbols.isLocalVarClass(addr1)){
       temp = '%'+codeCounters.newTEMP();
       code = code||instruction::ALOAD(temp,addr1);
     }
@@ -135,7 +135,7 @@ antlrcpp::Any CodeGenVisitor::visitFunctionCall(AslParser::FunctionCallContext *
     }
     //cuando sea una array y sea una variable creada dentro del scope
     //entonces hay que hacer pasar referencia.
-    else if(Types.isArrayTy(tfunc) and Symbols.isLocalVarClass(addr1)){
+    else if(not Types.isPrimitiveTy(tfunc) and Symbols.isLocalVarClass(addr1)){
       temp = '%'+codeCounters.newTEMP();
       code = code||instruction::ALOAD(temp,addr1);
     }
