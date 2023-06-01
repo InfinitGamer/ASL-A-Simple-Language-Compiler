@@ -339,6 +339,26 @@ antlrcpp::Any CodeGenVisitor::visitArrayIndex(AslParser::ArrayIndexContext *ctx)
     int size = getSize(getTypeDecor(ctx));
     std::string temp1 =  '%' + codeCounters.newTEMP(); 
     code1 = code1 || code2 || instruction::ILOAD(temp1, std::to_string(size));
+
+    std::string zero = '%' + codeCounters.newTEMP(); 
+    std::string number = '%' + codeCounters.newTEMP();
+    TypesMgr::TypeId t = getTypeDecor(ctx->left_expr());
+    unsigned int n = Types.getArraySize(t);
+    code1 = code1 || instruction::ILOAD(zero,"0");
+    code1 = code1 || instruction::ILOAD(number,std::to_string(n));
+
+    std::string cond = '%' + codeCounters.newTEMP(); 
+    std::string cond2 = '%' + codeCounters.newTEMP();
+    std::string cond3 = '%' + codeCounters.newTEMP();
+    code1 = code1  ||instruction::LT(cond, addr2, zero);
+    code1 = code1  ||instruction::LE(cond2, number, addr2);
+    code1 = code1  ||instruction::OR(cond3, cond, cond2);
+
+    std::string label = codeCounters.newLabelIF();
+    std::string labelEndIf = "endif"+label;
+    code1 = code1 || instruction::FJUMP(cond3, labelEndIf) || instruction::HALT(code::INDEX_OUT_OF_RANGE)
+                  || instruction::LABEL(labelEndIf);
+
     std::string temp2 =  '%' + codeCounters.newTEMP();
     code1 = code1 || instruction::MUL(temp2, addr2, temp1);
     if(offset1 == ""){
@@ -471,6 +491,26 @@ antlrcpp::Any CodeGenVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx) {
     int size = getSize(getTypeDecor(ctx));
     std::string temp1 =  '%' + codeCounters.newTEMP(); 
     code1 = code1 || code2 || instruction::ILOAD(temp1, std::to_string(size));
+
+    std::string zero = '%' + codeCounters.newTEMP(); 
+    std::string number = '%' + codeCounters.newTEMP();
+    TypesMgr::TypeId t = getTypeDecor(ctx->left_expr());
+    unsigned int n = Types.getArraySize(t);
+    code1 = code1 || instruction::ILOAD(zero,"0");
+    code1 = code1 || instruction::ILOAD(number,std::to_string(n));
+
+    std::string cond = '%' + codeCounters.newTEMP(); 
+    std::string cond2 = '%' + codeCounters.newTEMP();
+    std::string cond3 = '%' + codeCounters.newTEMP();
+    code1 = code1  ||instruction::LT(cond, addr2, zero);
+    code1 = code1  ||instruction::LE(cond2, number, addr2);
+    code1 = code1  ||instruction::OR(cond3, cond, cond2);
+
+    std::string label = codeCounters.newLabelIF();
+    std::string labelEndIf = "endif"+label;
+    code1 = code1 || instruction::FJUMP(cond3, labelEndIf) || instruction::HALT(code::INDEX_OUT_OF_RANGE)
+                  || instruction::LABEL(labelEndIf);
+
     std::string temp2 =  '%' + codeCounters.newTEMP();
     code1 = code1 || instruction::MUL(temp2, addr2, temp1);
     if(offset1 == ""){
