@@ -355,7 +355,7 @@ antlrcpp::Any CodeGenVisitor::visitArrayIndex(AslParser::ArrayIndexContext *ctx)
     code1 = code1  ||instruction::OR(cond3, cond, cond2);
 
     std::string label = codeCounters.newLabelIF();
-    std::string labelEndIf = "endif"+label;
+    std::string labelEndIf = "endComprobacionIndice"+label;
     code1 = code1 || instruction::FJUMP(cond3, labelEndIf) || instruction::HALT(code::INDEX_OUT_OF_RANGE)
                   || instruction::LABEL(labelEndIf);
 
@@ -507,7 +507,7 @@ antlrcpp::Any CodeGenVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx) {
     code1 = code1  ||instruction::OR(cond3, cond, cond2);
 
     std::string label = codeCounters.newLabelIF();
-    std::string labelEndIf = "endif"+label;
+    std::string labelEndIf = "endComprobacionIndice"+label;
     code1 = code1 || instruction::FJUMP(cond3, labelEndIf) || instruction::HALT(code::INDEX_OUT_OF_RANGE)
                   || instruction::LABEL(labelEndIf);
 
