@@ -84,7 +84,7 @@ antlrcpp::Any CodeGenVisitor::visitMethodCall(AslParser::MethodCallContext *ctx)
   TypesMgr::TypeId t = Symbols.getGlobalFunctionType(ctx->ID()->getText());
   auto typesParams = Types.getFuncParamsTypes(t);
   instructionList code;
-  code = instruction::PUSH();
+  if(not Types.isVoidTy(t)) code = instruction::PUSH();
   for(int i = 0; i < (int)ctx->expr().size(); i++){  
     CodeAttribs     && codAtsE1 = visit(ctx->expr(i));
     std::string           addr1 = codAtsE1.addr;
@@ -109,7 +109,7 @@ antlrcpp::Any CodeGenVisitor::visitMethodCall(AslParser::MethodCallContext *ctx)
   for (int i = 0; i < (int)ctx->expr().size(); i++){
     code = code || instruction::POP();
   }
-  code = code || instruction::POP();
+  if(not Types.isVoidTy(t))code = code || instruction::POP();
   DEBUG_EXIT();
   return code;
 }
